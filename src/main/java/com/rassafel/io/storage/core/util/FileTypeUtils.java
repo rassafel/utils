@@ -10,16 +10,17 @@ import org.springframework.util.MimeTypeUtils;
 
 @UtilityClass
 public class FileTypeUtils {
-    private final MimeMappings INSTANCE = MimeMappings.DEFAULT;
     public final MimeType DEFAULT_MIME_TYPE = MimeTypeUtils.APPLICATION_OCTET_STREAM;
+    private final MimeMappings INSTANCE = MimeMappings.DEFAULT;
 
-    public static MimeType getFileMimeType(String str) {
-        val extension = FilenameUtils.getExtension(str);
+    public static MimeType getMimeTypeFromName(String name) {
+        val extension = FilenameUtils.getExtension(name);
         return getMimeType(extension);
     }
 
-    public static MimeType getMimeType(String str) {
-        val ext = INSTANCE.get(str);
+    public static MimeType getMimeType(String extension) {
+        if (extension == null) return DEFAULT_MIME_TYPE;
+        val ext = INSTANCE.get(extension);
         if (StringUtils.isBlank(ext)) return DEFAULT_MIME_TYPE;
         return MimeTypeUtils.parseMimeType(ext);
     }

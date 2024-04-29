@@ -1,5 +1,6 @@
 plugins {
     id("java")
+    id("groovy")
     id("org.springframework.boot")
     id("io.spring.dependency-management")
     idea
@@ -9,6 +10,7 @@ group = "com.rassafel"
 java.sourceCompatibility = JavaVersion.VERSION_17
 val isCI = System.getenv().containsKey("CI")
 val amazonVersion: String by project
+val spockVersion: String by project
 
 idea.module {
     isDownloadSources = !isCI
@@ -43,6 +45,12 @@ fun DependencyHandler.springSecurity(
 ): String = dependencyModuleName(
     "org.springframework.security:spring-security-$module", version
 )
+
+fun DependencyHandler.spock(
+    module: String, version: String? = null
+): String = dependencyModuleName(
+    "org.spockframework:spock-$module", version
+)
 //endregion
 
 configurations {
@@ -57,6 +65,7 @@ configurations {
 dependencyManagement {
     imports {
         mavenBom("software.amazon.awssdk:bom:$amazonVersion")
+        mavenBom("org.spockframework:spock-bom:$spockVersion")
     }
 }
 
@@ -72,15 +81,17 @@ dependencies {
     implementation(springBootStarter("json"))
     implementation(springBootStarter("mail"))
 
+    implementation("commons-io:commons-io:2.16.1")
+    implementation("com.google.guava:guava:33.1.0-jre")
     implementation("org.apache.commons:commons-lang3")
     implementation("org.apache.commons:commons-collections4:4.4")
-    implementation("com.google.guava:guava:33.1.0-jre")
-    implementation("commons-io:commons-io:2.16.1")
 
     implementation("software.amazon.awssdk:s3")
-    implementation("software.amazon.awssdk:s3-transfer-manager")
 
     testImplementation(springBootStarter("test"))
+    testImplementation(spock("core"))
+    testImplementation(spock("spring"))
+    testImplementation("net.bytebuddy:byte-buddy")
 }
 
 tasks.test {

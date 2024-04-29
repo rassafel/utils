@@ -66,11 +66,15 @@ dependencies {
 
     implementation(springBoot("starter"))
     implementation(springBootStarter("data-jpa"))
+    implementation(springBootStarter("web"))
+    implementation(springBootStarter("validation"))
+    implementation(springBootStarter("security"))
     implementation(springBootStarter("json"))
     implementation(springBootStarter("mail"))
 
     implementation("org.apache.commons:commons-lang3")
     implementation("org.apache.commons:commons-collections4:4.4")
+    implementation("com.google.guava:guava:33.1.0-jre")
     implementation("commons-io:commons-io:2.16.1")
 
     implementation("software.amazon.awssdk:s3")

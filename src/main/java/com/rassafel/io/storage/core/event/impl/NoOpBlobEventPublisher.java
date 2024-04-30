@@ -1,4 +1,4 @@
-package com.rassafel.io.storage.core.event.support;
+package com.rassafel.io.storage.core.event.impl;
 
 import com.rassafel.io.storage.core.event.BlobEvent;
 import com.rassafel.io.storage.core.event.BlobEventPublisher;

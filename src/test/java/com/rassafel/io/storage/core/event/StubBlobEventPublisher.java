@@ -1,6 +1,6 @@
 package com.rassafel.io.storage.core.event;
 
-import com.rassafel.io.storage.core.event.support.NoOpBlobEventPublisher;
+import com.rassafel.io.storage.core.event.impl.NoOpBlobEventPublisher;
 import lombok.Getter;
 
 import java.util.ArrayList;

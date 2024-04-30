@@ -1,12 +1,8 @@
-package com.rassafel.io.storage.core.event.event.support
+package com.rassafel.io.storage.core.event.support
 
-import com.rassafel.io.storage.core.event.*
-import com.rassafel.io.storage.core.event.support.GenericBlobListenerAdapter
-import com.rassafel.io.storage.core.event.support.StubDeleteBlobListenerInterface
-import com.rassafel.io.storage.core.event.support.StubDeleteBlogListenerFromInterface
-import com.rassafel.io.storage.core.event.support.StubGenericBlobListener
-import com.rassafel.io.storage.core.event.support.StubRootBlobListenerInterface
-import com.rassafel.io.storage.core.event.support.StubRootBlogListenerFromInterface
+
+import com.rassafel.io.storage.core.event.BlobEvent
+import com.rassafel.io.storage.core.event.BlobListener
 import com.rassafel.io.storage.core.event.type.DeleteBlobEvent
 import com.rassafel.io.storage.core.event.type.UploadBlobEvent
 import spock.lang.Specification

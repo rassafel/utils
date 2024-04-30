@@ -13,6 +13,18 @@ import java.util.function.Supplier;
 
 @UtilityClass
 public class Assert {
+    public void isFalse(boolean state, String message) {
+        if (state) {
+            throw new IllegalArgumentException(message);
+        }
+    }
+
+    public void isFalse(boolean state, Supplier<String> messageSupplier) {
+        if (state) {
+            throw new IllegalArgumentException(nullSafeGet(messageSupplier));
+        }
+    }
+
     public void isTrue(boolean state, String message) {
         if (!state) {
             throw new IllegalArgumentException(message);

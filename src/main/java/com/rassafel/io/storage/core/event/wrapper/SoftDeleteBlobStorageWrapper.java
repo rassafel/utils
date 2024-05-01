@@ -7,16 +7,14 @@ import com.rassafel.io.storage.core.StoredBlobObject;
 import com.rassafel.io.storage.core.event.BlobEventPublisher;
 import com.rassafel.io.storage.core.event.type.RestoreSoftDeletedBlobEvent;
 import com.rassafel.io.storage.core.event.type.SoftDeleteBlobEvent;
-import com.rassafel.io.storage.core.query.StoreBlobRequest;
-import com.rassafel.io.storage.core.query.StoreBlobResponse;
 import com.rassafel.io.storage.core.query.UpdateAttributesRequest;
 import com.rassafel.io.storage.core.query.UpdateAttributesResponse;
 import com.rassafel.io.storage.core.query.impl.DefaultUpdateAttributesRequest;
+import com.rassafel.io.storage.core.support.wrapper.DefaultDelegatedBlobStorage;
 import lombok.val;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.lang.Nullable;
 
-import java.io.InputStream;
 import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.Optional;
@@ -29,9 +27,8 @@ import java.util.function.Predicate;
  * <li>{@link SoftDeleteBlobEvent}</li>
  * <li>{@link RestoreSoftDeletedBlobEvent}</li>
  */
-public class SoftDeleteBlobStorageWrapper implements BlobStorage {
+public class SoftDeleteBlobStorageWrapper extends DefaultDelegatedBlobStorage {
     public static final String DEFAULT_DELETED_ATTRIBUTE = "X-Deleted";
-    private final BlobStorage delegate;
     private final Clock clock;
     private final BlobEventPublisher publisher;
     private final String deletedAttribute;
@@ -41,19 +38,13 @@ public class SoftDeleteBlobStorageWrapper implements BlobStorage {
     }
 
     public SoftDeleteBlobStorageWrapper(BlobStorage delegate, Clock clock, BlobEventPublisher publisher, String deletedAttribute) {
-        Assert.notNull(delegate, "delegate cannot be null");
+        super(delegate);
         Assert.notNull(clock, "clock cannot be null");
         Assert.notNull(publisher, "publisher cannot be null");
         Assert.hasText(deletedAttribute, "deletedAttribute cannot be null");
-        this.delegate = delegate;
         this.clock = clock;
         this.publisher = publisher;
         this.deletedAttribute = deletedAttribute;
-    }
-
-    @Override
-    public StoreBlobResponse store(InputStream inputStream, StoreBlobRequest request) {
-        return delegate.store(inputStream, request);
     }
 
     @Override
@@ -62,7 +53,7 @@ public class SoftDeleteBlobStorageWrapper implements BlobStorage {
     }
 
     public boolean existsByRefIgnoreDeleted(String ref) {
-        return delegate.existsByRef(ref);
+        return super.existsByRef(ref);
     }
 
     @Override
@@ -74,7 +65,7 @@ public class SoftDeleteBlobStorageWrapper implements BlobStorage {
 
     @Nullable
     public StoredBlobObject getByRefIgnoreDeleted(String ref) {
-        return delegate.getByRef(ref);
+        return super.getByRef(ref);
     }
 
     @Override
@@ -84,7 +75,7 @@ public class SoftDeleteBlobStorageWrapper implements BlobStorage {
     }
 
     public Optional<StoredBlobObject> findByRefIgnoreDeleted(String ref) {
-        return delegate.findByRef(ref);
+        return super.findByRef(ref);
     }
 
     protected boolean isDeleted(StoredBlobObject blob) {
@@ -99,7 +90,7 @@ public class SoftDeleteBlobStorageWrapper implements BlobStorage {
             .attribute(deletedAttribute, timestamp.toString())
             .build();
         val response = updateByRefIgnoreDeleted(ref, request);
-        val event = new SoftDeleteBlobEvent(delegate, timestamp, ref);
+        val event = new SoftDeleteBlobEvent(getDelegate(), timestamp, ref);
         publisher.publish(event);
         return true;
     }
@@ -119,14 +110,14 @@ public class SoftDeleteBlobStorageWrapper implements BlobStorage {
             .removeAttribute(deletedAttribute)
             .build();
         val response = updateByRefIgnoreDeleted(ref, request);
-        val event = new RestoreSoftDeletedBlobEvent(delegate, clock, ref);
+        val event = new RestoreSoftDeletedBlobEvent(getDelegate(), clock, ref);
         publisher.publish(event);
         return true;
 
     }
 
     public boolean hardDeleteByRef(String ref) {
-        return delegate.deleteByRef(ref);
+        return super.deleteByRef(ref);
     }
 
     @Override
@@ -136,6 +127,6 @@ public class SoftDeleteBlobStorageWrapper implements BlobStorage {
     }
 
     public UpdateAttributesResponse updateByRefIgnoreDeleted(String ref, UpdateAttributesRequest request) {
-        return delegate.updateByRef(ref, request);
+        return super.updateByRef(ref, request);
     }
 }

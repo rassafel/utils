@@ -1,306 +1,353 @@
 package com.rassafel.io.storage.core.impl
 
-
+import com.rassafel.io.storage.core.BlobStorage
 import com.rassafel.io.storage.core.BlobStorageLocator
+import com.rassafel.io.storage.core.BlobStorageSpecification
 import com.rassafel.io.storage.core.query.impl.*
-import spock.lang.Ignore
-import spock.lang.Specification
+import spock.lang.Shared
 
-import java.nio.charset.StandardCharsets
-
-@Ignore
-class RoutingBlobStorageTest extends Specification {
+class RoutingBlobStorageTest extends BlobStorageSpecification {
     BlobStorageLocator locator = Mock()
 
     def storage = new RoutingBlobStorage(locator)
 
-    def defaultRef = "/static/test"
+    @Shared
+    def blobKey = "/static/test"
+    @Shared
+    def storageName = "test"
+    @Shared
+    def ref = "$storageName${RoutingBlobStorage.DEFAULT_DELIMITER}$blobKey"
 
-    TestStoredBlobObject defaultBlobObject = TestStoredBlobObject.builder()
+    @Shared
+    TestStoredBlobObject.Builder blobBuilder = TestStoredBlobObject.builder()
         .originalName("test.txt")
         .attribute("X-Meta", "Value1")
         .contentType("text/plain")
-        .storedRef(defaultRef)
+        .storedRef(ref)
+
+//region store test
+    def storeRequest = DefaultStoreBlobRequest.builder()
+        .originalName("test.txt")
+        .attribute("X-Meta", "Value1")
         .build()
 
-    def "default store"() {
+    def "store"() {
         given:
-        def body = "Test body"
-        def name = "test.txt"
-        def request = DefaultStoreBlobRequest.builder()
-            .originalName(name)
-            .attribute("X-Meta", "Value1")
-            .build()
-        defaultStorage.store(_, _) >> new DefaultStoreBlobResponse(defaultBlobObject)
+        def expectedBlob = blobBuilder.build()
 
         when:
-        def response = storage.store(toInputStream(body), request)
+        def response = storage.store(storageName, toInputStream("Test"), storeRequest)
 
         then:
-        0 * storage1.store(_, _)
-        0 * storage2.store(_, _)
-        verifyAll(response.getStoredObject()) {
-            getStoredRef() == "default:$defaultRef"
+        1 * locator.findStorage(storageName) >> Mock(BlobStorage) {
+            1 * store(_, _) >> new DefaultStoreBlobResponse(expectedBlob)
+        }
+        0 * _
+        verifyAll(response) {
+            it.getStoredObject().is(expectedBlob)
         }
     }
 
-    def "delegate store"() {
+    def "store default"() {
         given:
-        def body = "Test body"
-        def name = "test.txt"
-        def request = DefaultStoreBlobRequest.builder()
-            .originalName(name)
-            .attribute("X-Meta", "Value1")
-            .build()
-        storage1.store(_, _) >> new DefaultStoreBlobResponse(defaultBlobObject)
+        def expectedBlob = blobBuilder.build()
 
         when:
-        def response = storage.store("storage1", toInputStream(body), request)
+        def response = storage.store(toInputStream("Test"), storeRequest)
 
         then:
-        0 * defaultStorage.store(_, _)
-        0 * storage2.store(_, _)
-        verifyAll(response.getStoredObject()) {
-            getStoredRef() == "storage1:$defaultRef"
+        1 * locator.getDefaultStorage() >> Mock(BlobStorage) {
+            1 * store(_, _) >> new DefaultStoreBlobResponse(expectedBlob)
+        }
+        0 * _
+        verifyAll(response) {
+            it.getStoredObject().is(expectedBlob)
         }
     }
 
-    def "delegate not found store"() {
-        given:
-        def body = "Test body"
-        def name = "test.txt"
-        def request = DefaultStoreBlobRequest.builder()
-            .originalName(name)
-            .attribute("X-Meta", "Value1")
-            .build()
-
+    def "store with ex"() {
         when:
-        def response = storage.store("not_found", toInputStream(body), request)
+        def response = storage.store(storageName, toInputStream("Test"), storeRequest)
 
         then:
-        thrown(UnsupportedOperationException)
-        0 * defaultStorage.store(_, _)
-        0 * storage1.store(_, _)
-        0 * storage2.store(_, _)
-    }
+        thrown(expectedEx)
+        1 * locator.findStorage(storageName) >> locatedStorage
+        0 * _
 
-    def toInputStream(String value) {
-        return new ByteArrayInputStream(value.getBytes(StandardCharsets.UTF_8))
+        where:
+        expectedEx                    | locatedStorage
+        UnsupportedOperationException | Mock(BlobStorage) {
+            1 * store(_, _) >> { throw new UnsupportedOperationException() }
+        }
+        NullPointerException          | null
     }
+//endregion
+//region update test
+    def updateRequest = DefaultUpdateAttributesRequest.builder()
+        .attribute("X-Test", "Value")
+        .build()
 
-    def fromInputStream(InputStream inputStream) {
-        return new String(inputStream.readAllBytes(), StandardCharsets.UTF_8)
-    }
-
-    def "default update"() {
+    def "update"() {
         given:
-        defaultStorage.updateByRef(defaultRef, _) >> new DefaultUpdateAttributesResponse(defaultBlobObject)
-        def request = DefaultUpdateAttributesRequest.builder()
-            .attribute("X-Test", "Value")
-            .build()
+        def expectedBlob = blobBuilder.build()
 
         when:
-        def response = storage.updateByRef(defaultRef, request)
+        def response = storage.updateByRef(ref, updateRequest)
 
         then:
-        0 * storage1.updateByRef(_, _)
-        0 * storage2.updateByRef(_, _)
-        verifyAll(response.getStoredObject()) {
-            getStoredRef() == "default:$defaultRef"
+        1 * locator.findStorage(storageName) >> Mock(BlobStorage) {
+            1 * updateByRef(ref, _) >> new DefaultUpdateAttributesResponse(expectedBlob)
+        }
+        0 * _
+        verifyAll(response) {
+            it.getStoredObject().is(expectedBlob)
         }
     }
 
-    def "delegate update"() {
+    def "update default"() {
         given:
-        storage1.updateByRef(defaultRef, _) >> new DefaultUpdateAttributesResponse(defaultBlobObject)
-        def request = DefaultUpdateAttributesRequest.builder()
-            .attribute("X-Test", "Value")
-            .build()
+        def expectedBlob = blobBuilder.build()
 
         when:
-        def response = storage.updateByRef("storage1:$defaultRef", request)
+        def response = storage.updateByRef(blobKey, updateRequest)
 
         then:
-        0 * defaultStorage.updateByRef(_, _)
-        0 * storage2.updateByRef(_, _)
-        verifyAll(response.getStoredObject()) {
-            getStoredRef() == "storage1:$defaultRef"
+        1 * locator.findStorage(null) >> Mock(BlobStorage) {
+            1 * updateByRef(blobKey, _) >> new DefaultUpdateAttributesResponse(expectedBlob)
+        }
+        0 * _
+        verifyAll(response) {
+            it.getStoredObject().is(expectedBlob)
         }
     }
 
-    def "delegate not found update"() {
-        given:
-        def request = DefaultUpdateAttributesRequest.builder()
-            .attribute("X-Test", "Value")
-            .build()
-
+    def "update with ex"() {
         when:
-        def response = storage.updateByRef("not_found:$defaultRef", request)
+        def response = storage.updateByRef(_ref, updateRequest)
 
         then:
-        thrown(IllegalArgumentException)
-        0 * defaultStorage.updateByRef(_, _)
-        0 * storage1.updateByRef(_, _)
-        0 * storage2.updateByRef(_, _)
-    }
+        thrown(expectedEx)
+        1 * locator.findStorage(_storageName) >> locatedStorage
+        0 * _
 
-    def "default find"() {
-        given:
-        defaultStorage.findByRef(defaultRef) >> Optional.of(defaultBlobObject)
-
-        when:
-        def obj = storage.findByRef(defaultRef)
-
-        then:
-        obj.isPresent()
-        verifyAll(obj.get()) {
-            getStoredRef() == "default:$defaultRef"
+        where:
+        _storageName | _ref    | expectedEx               | locatedStorage
+        storageName  | ref     | IllegalArgumentException | Mock(BlobStorage) {
+            1 * updateByRef(ref, _) >> { throw new IllegalArgumentException() }
         }
-        0 * storage1.findByRef(_)
-        0 * storage2.findByRef(_)
-    }
-
-    def "delegate find"() {
-        given:
-        storage1.findByRef(defaultRef) >> Optional.of(defaultBlobObject)
-
-        when:
-        def obj = storage.findByRef("storage1:$defaultRef")
-
-        then:
-        obj.isPresent()
-        verifyAll(obj.get()) {
-            getStoredRef() == "storage1:$defaultRef"
+        storageName  | ref     | NullPointerException     | null
+        null         | blobKey | IllegalArgumentException | Mock(BlobStorage) {
+            1 * updateByRef(blobKey, _) >> { throw new IllegalArgumentException() }
         }
-        0 * defaultStorage.findByRef(_)
-        0 * storage2.findByRef(_)
+        null         | blobKey | NullPointerException     | null
     }
-
-    def "delegate not found find"() {
+//endregion
+//region exists test
+    def "exists"() {
         when:
-        def response = storage.findByRef("not_found:$defaultRef")
+        def response = storage.existsByRef(ref)
 
         then:
-        thrown(IllegalArgumentException)
-        0 * defaultStorage.findByRef(_)
-        0 * storage1.findByRef(_)
-        0 * storage2.findByRef(_)
-    }
-
-    def "default get"() {
-        given:
-        defaultStorage.getByRef(defaultRef) >> defaultBlobObject
-
-        when:
-        def obj = storage.getByRef(defaultRef)
-
-        then:
-        obj != null
-        verifyAll(obj) {
-            getStoredRef() == "default:$defaultRef"
+        1 * locator.findStorage(storageName) >> Mock(BlobStorage) {
+            1 * existsByRef(ref) >> result
         }
-        0 * storage1.getByRef(_)
-        0 * storage2.getByRef(_)
+        0 * _
+        response == result
+
+        where:
+        result << [true, false]
     }
 
-    def "delegate get"() {
-        given:
-        storage1.getByRef(defaultRef) >> defaultBlobObject
-
+    def "exists default"() {
         when:
-        def obj = storage.getByRef("storage1:$defaultRef")
+        def response = storage.existsByRef(blobKey)
 
         then:
-        obj != null
-        verifyAll(obj) {
-            getStoredRef() == "storage1:$defaultRef"
+        1 * locator.findStorage(null) >> Mock(BlobStorage) {
+            1 * existsByRef(blobKey) >> result
         }
-        0 * defaultStorage.findByRef(_)
-        0 * storage2.findByRef(_)
+        0 * _
+        response == result
+
+        where:
+        result << [true, false]
     }
 
-    def "delegate not found get"() {
+    def "exists with ex"() {
         when:
-        def response = storage.getByRef("not_found:$defaultRef")
+        def response = storage.existsByRef(_ref)
 
         then:
-        thrown(IllegalArgumentException)
-        0 * defaultStorage.getByRef(_)
-        0 * storage1.getByRef(_)
-        0 * storage2.getByRef(_)
+        thrown(expectedEx)
+        1 * locator.findStorage(_storageName) >> locatedStorage
+        0 * _
+
+        where:
+        _storageName | _ref    | expectedEx               | locatedStorage
+        storageName  | ref     | IllegalArgumentException | Mock(BlobStorage) {
+            1 * existsByRef(ref) >> { throw new IllegalArgumentException() }
+        }
+        storageName  | ref     | NullPointerException     | null
+        null         | blobKey | IllegalArgumentException | Mock(BlobStorage) {
+            1 * existsByRef(blobKey) >> { throw new IllegalArgumentException() }
+        }
+        null         | blobKey | NullPointerException     | null
     }
-
-    def "default exists"() {
-        given:
-        defaultStorage.existsByRef(defaultRef) >> true
-
+//endregion
+//region delete test
+    def "delete"() {
         when:
-        def obj = storage.existsByRef(defaultRef)
+        def response = storage.deleteByRef(ref)
 
         then:
-        obj
-        0 * storage1.getByRef(_)
-        0 * storage2.getByRef(_)
+        1 * locator.findStorage(storageName) >> Mock(BlobStorage) {
+            1 * deleteByRef(ref) >> result
+        }
+        0 * _
+        response == result
+
+        where:
+        result << [true, false]
     }
 
-    def "delegate exists"() {
-        given:
-        storage1.existsByRef(defaultRef) >> true
-
+    def "delete default"() {
         when:
-        def obj = storage.existsByRef("storage1:$defaultRef")
+        def response = storage.deleteByRef(blobKey)
 
         then:
-        obj
-        0 * defaultStorage.findByRef(_)
-        0 * storage2.findByRef(_)
+        1 * locator.findStorage(null) >> Mock(BlobStorage) {
+            1 * deleteByRef(blobKey) >> result
+        }
+        0 * _
+        response == result
+
+        where:
+        result << [true, false]
     }
 
-    def "delegate not found exists"() {
+    def "delete with ex"() {
         when:
-        def response = storage.existsByRef("not_found:$defaultRef")
+        def response = storage.deleteByRef(_ref)
 
         then:
-        thrown(IllegalArgumentException)
-        0 * defaultStorage.existsByRef(_)
-        0 * storage1.existsByRef(_)
-        0 * storage2.existsByRef(_)
+        thrown(expectedEx)
+        1 * locator.findStorage(_storageName) >> locatedStorage
+        0 * _
+
+        where:
+        _storageName | _ref    | expectedEx               | locatedStorage
+        storageName  | ref     | IllegalArgumentException | Mock(BlobStorage) {
+            1 * deleteByRef(ref) >> { throw new IllegalArgumentException() }
+        }
+        storageName  | ref     | NullPointerException     | null
+        null         | blobKey | IllegalArgumentException | Mock(BlobStorage) {
+            1 * deleteByRef(blobKey) >> { throw new IllegalArgumentException() }
+        }
+        null         | blobKey | NullPointerException     | null
     }
-
-    def "default delete"() {
-        given:
-        defaultStorage.deleteByRef(defaultRef) >> true
-
+//endregion
+//region get test
+    def "get"() {
         when:
-        def obj = storage.deleteByRef(defaultRef)
+        def response = storage.getByRef(ref)
 
         then:
-        obj
-        0 * storage1.deleteByRef(_)
-        0 * storage2.deleteByRef(_)
+        1 * locator.findStorage(storageName) >> Mock(BlobStorage) {
+            1 * getByRef(ref) >> blob
+        }
+        0 * _
+        response.is(blob)
+
+        where:
+        blob << [null, blobBuilder.build()]
     }
 
-    def "delegate delete"() {
-        given:
-        storage1.deleteByRef(defaultRef) >> true
-
+    def "get default"() {
         when:
-        def obj = storage.deleteByRef("storage1:$defaultRef")
+        def response = storage.getByRef(blobKey)
 
         then:
-        obj
-        0 * defaultStorage.deleteByRef(_)
-        0 * storage2.deleteByRef(_)
+        1 * locator.findStorage(null) >> Mock(BlobStorage) {
+            1 * getByRef(blobKey) >> blob
+        }
+        0 * _
+        response.is(blob)
+
+        where:
+        blob << [null, blobBuilder.build()]
     }
 
-    def "delegate not found delete"() {
+    def "get with ex"() {
         when:
-        def response = storage.deleteByRef("not_found:$defaultRef")
+        def response = storage.getByRef(_ref)
 
         then:
-        thrown(IllegalArgumentException)
-        0 * defaultStorage.deleteByRef(_)
-        0 * storage1.deleteByRef(_)
-        0 * storage2.deleteByRef(_)
+        thrown(expectedEx)
+        1 * locator.findStorage(_storageName) >> locatedStorage
+        0 * _
+
+        where:
+        _storageName | _ref    | expectedEx               | locatedStorage
+        storageName  | ref     | IllegalArgumentException | Mock(BlobStorage) {
+            1 * getByRef(ref) >> { throw new IllegalArgumentException() }
+        }
+        storageName  | ref     | NullPointerException     | null
+        null         | blobKey | IllegalArgumentException | Mock(BlobStorage) {
+            1 * getByRef(blobKey) >> { throw new IllegalArgumentException() }
+        }
+        null         | blobKey | NullPointerException     | null
     }
+//endregion
+//region find test
+    def "find"() {
+        when:
+        def response = storage.findByRef(ref)
+
+        then:
+        1 * locator.findStorage(storageName) >> Mock(BlobStorage) {
+            1 * findByRef(ref) >> blob
+        }
+        0 * _
+        response.is(blob)
+
+        where:
+        blob << [Optional.empty(), Optional.of(blobBuilder.build())]
+    }
+
+    def "find default"() {
+        when:
+        def response = storage.findByRef(blobKey)
+
+        then:
+        1 * locator.findStorage(null) >> Mock(BlobStorage) {
+            1 * findByRef(blobKey) >> blob
+        }
+        0 * _
+        response.is(blob)
+
+        where:
+        blob << [Optional.empty(), Optional.of(blobBuilder.build())]
+    }
+
+    def "find with ex"() {
+        when:
+        def response = storage.findByRef(_ref)
+
+        then:
+        thrown(expectedEx)
+        1 * locator.findStorage(_storageName) >> locatedStorage
+        0 * _
+
+        where:
+        _storageName | _ref    | expectedEx               | locatedStorage
+        storageName  | ref     | IllegalArgumentException | Mock(BlobStorage) {
+            1 * findByRef(ref) >> { throw new IllegalArgumentException() }
+        }
+        storageName  | ref     | NullPointerException     | null
+        null         | blobKey | IllegalArgumentException | Mock(BlobStorage) {
+            1 * findByRef(blobKey) >> { throw new IllegalArgumentException() }
+        }
+        null         | blobKey | NullPointerException     | null
+    }
+//endregion
 }

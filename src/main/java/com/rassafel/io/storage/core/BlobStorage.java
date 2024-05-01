@@ -19,6 +19,7 @@ public interface BlobStorage {
      * @param inputStream blob stream to store
      * @param request     store info
      * @return response with stored blob object
+     * @throws StoreBlobException if input stream problem
      */
     StoreBlobResponse store(InputStream inputStream, StoreBlobRequest request);
 
@@ -66,7 +67,7 @@ public interface BlobStorage {
      * @param request update attributes info.
      *                Remove attribute from blob if accepted value is null or blank
      * @return response with stored blob object
-     * @throws {@link NotFoundBlobException} if blob not exists
+     * @throws NotFoundBlobException if blob not exists
      */
     UpdateAttributesResponse updateByRef(String ref, UpdateAttributesRequest request);
 }

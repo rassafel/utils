@@ -14,6 +14,7 @@ public interface BlobStorageLocator {
      * @param storageName storage name
      * @return Blob storage by name
      */
+    @Nullable
     BlobStorage findStorage(@Nullable String storageName);
 
     /**

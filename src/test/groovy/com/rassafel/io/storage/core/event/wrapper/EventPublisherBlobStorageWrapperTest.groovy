@@ -3,14 +3,11 @@ package com.rassafel.io.storage.core.event.wrapper
 import com.rassafel.io.storage.core.BlobStorage
 import com.rassafel.io.storage.core.BlobStorageSpecification
 import com.rassafel.io.storage.core.NotFoundBlobException
-import com.rassafel.io.storage.core.event.StubBlobEventPublisher
+import com.rassafel.io.storage.core.event.BlobEventPublisher
 import com.rassafel.io.storage.core.event.type.HardDeleteBlobEvent
+import com.rassafel.io.storage.core.event.type.UpdateAttributesBlobEvent
 import com.rassafel.io.storage.core.event.type.UploadBlobEvent
-import com.rassafel.io.storage.core.impl.keygen.StaticKeyGenerator
-import com.rassafel.io.storage.core.query.impl.DefaultStoreBlobRequest
-import com.rassafel.io.storage.core.query.impl.DefaultUpdateAttributesRequest
-import com.rassafel.io.storage.mem.InMemoryBlobStorage
-import spock.lang.Shared
+import com.rassafel.io.storage.core.query.impl.*
 import spock.util.time.MutableClock
 
 import java.time.LocalDate
@@ -19,152 +16,165 @@ import java.time.LocalTime
 import java.time.ZoneOffset
 
 class EventPublisherBlobStorageWrapperTest extends BlobStorageSpecification {
-    @Shared
     LocalDateTime now = LocalDateTime.of(LocalDate.of(2024, 4, 30), LocalTime.MIDNIGHT)
     MutableClock clock = new MutableClock(now.toInstant(ZoneOffset.UTC), ZoneOffset.UTC)
 
     def staticKey = "static"
-    def keyGen = new StaticKeyGenerator(staticKey)
+    def ref = "/${staticKey}.txt"
 
-//  ToDo: mock BlobStorage
-    def delegate = new InMemoryBlobStorage(keyGen, clock)
+    TestStoredBlobObject.Builder blobBuilder = TestStoredBlobObject.builder()
+        .originalName("test.txt")
+        .attribute("X-Meta", "Value1")
+        .contentType("text/plain")
+        .storedRef(ref)
+        .uploadedAt(now)
+        .lastModifiedAt(now)
 
-    def publisher = new StubBlobEventPublisher()
-
+    BlobStorage delegate = Mock()
+    BlobEventPublisher publisher = Mock()
     def storage = new EventPublisherBlobStorageWrapper(delegate, clock, publisher)
 
-
-    def "simple test"() {
+    def "store"() {
         given:
-        def body = "Test body"
-        def name = "test.txt"
-        def expectedRef = "/${staticKey}.txt"
-
-        expect:
-        existsCheck(false, expectedRef, storage)
-        existsCheck(false, expectedRef, delegate)
-
-        when:
-        def deleteRes = storage.deleteByRef(expectedRef)
-        then:
-        !deleteRes
-        verifyAll(publisher.events) {
-            size() == 0
-        }
-
-        when:
-        def storeRequest = DefaultStoreBlobRequest.builder()
-            .originalName(name)
+        def request = DefaultStoreBlobRequest.builder()
+            .originalName("test.txt")
             .attribute("X-Meta", "Value1")
-            .attribute("X-Replace-Meta", "Value2")
-            .attribute("X-Delete-Meta", "Value3")
+            .contentType("text/plain")
             .build()
-        def storeResponse = storage.store(toInputStream(body), storeRequest)
-            .getStoredObject()
-
-        then:
-        verifyAll(storeResponse) {
-            getAttribute("X-Meta") == "Value1"
-            getAttribute("X-Replace-Meta") == "Value2"
-            getAttribute("X-Delete-Meta") == "Value3"
-            getContentType() == "text/plain"
-            getOriginalName() == name
-            blobToString(it) == body
-            getUploadedAt() == now
-            getLastModifiedAt() == now
-            getSize() == getBytesSize(body)
-            getStoredRef() == expectedRef
-        }
-
-        and:
-        verifyAll(publisher.events) {
-            size() == 1
-            each {
-                it instanceof UploadBlobEvent &&
-                    it.ref == expectedRef
-            }
-            clear()
-        }
+        def expResponse = new DefaultStoreBlobResponse(blobBuilder.build())
 
         when:
-        def tickedNow = now.plusSeconds(10)
-        clock.setInstant(tickedNow.toInstant(ZoneOffset.UTC))
-        def updateRequest = DefaultUpdateAttributesRequest.builder()
-            .attribute("X-Replace-Meta", "Value4")
-            .attribute("X-New-Meta", "Value5")
-            .removeAttribute("X-Delete-Meta")
-            .build()
-        def updateResponse = storage.updateByRef(expectedRef, updateRequest)
-            .getStoredObject()
+        def response = storage.store(toInputStream("Test"), request)
+
         then:
-        verifyAll(updateResponse) {
-            getAttribute("X-Delete-Meta") == null
-            getAttribute("X-Meta") == "Value1"
-            getAttribute("X-Replace-Meta") == "Value4"
-            getAttribute("X-New-Meta") == "Value5"
-            getContentType() == "text/plain"
-            getOriginalName() == name
-            blobToString(it) == body
-            getUploadedAt() == now
-            getLastModifiedAt() == tickedNow
-            getSize() == getBytesSize(body)
-            getStoredRef() == expectedRef
-        }
-
-        expect:
-        existsCheck(true, expectedRef, storage)
-        existsCheck(true, expectedRef, delegate)
-        verifyAll(publisher.events) {
-            size() == 1
-            each {
-                it instanceof UploadBlobEvent &&
-                    it.ref == expectedRef
-            }
-            clear()
-        }
-
-        when:
-        deleteRes = storage.deleteByRef(expectedRef)
-        then:
-        deleteRes
-
-        expect:
-        existsCheck(false, expectedRef, storage)
-        existsCheck(false, expectedRef, delegate)
-        verifyAll(publisher.events) {
-            size() == 1
-            each {
-                it instanceof HardDeleteBlobEvent &&
-                    it.ref == expectedRef
-            }
-            clear()
-        }
-
-        when:
-        deleteRes = storage.deleteByRef(expectedRef)
-        then:
-        !deleteRes
-
-        when:
-        tickedNow = tickedNow.plusSeconds(10)
-        clock.setInstant(tickedNow.toInstant(ZoneOffset.UTC))
-        updateRequest = DefaultUpdateAttributesRequest.builder()
-            .attribute("X-Fail-Edit", "Value6")
-            .build()
-        updateResponse = storage.updateByRef(expectedRef, updateRequest)
-            .getStoredObject()
-        then:
-        thrown NotFoundBlobException
-        verifyAll(publisher.events) {
-            size() == 0
-        }
+        1 * delegate.store(_, _) >> expResponse
+        1 * publisher.publish({
+            it instanceof UploadBlobEvent && it.ref == ref
+        })
+        0 * _
+        response.is(expResponse)
     }
 
-    def existsCheck(boolean expected, String ref, BlobStorage storage) {
-        def obj = storage.getByRef(ref)
-        def objOpt = storage.findByRef(ref)
-        def exists = storage.existsByRef(ref)
+    def "exists"() {
+        when:
+        def response = storage.existsByRef(ref)
 
-        (obj != null) == expected && exists == expected && objOpt.isPresent() == expected
+        then:
+        1 * delegate.existsByRef(ref) >> true
+        0 * _
+        response
+    }
+
+    def "exists if not found"() {
+        when:
+        def response = storage.existsByRef(ref)
+
+        then:
+        1 * delegate.existsByRef(ref) >> false
+        0 * _
+        !response
+    }
+
+    def "get"() {
+        given:
+        def expBlob = blobBuilder.build()
+
+        when:
+        def response = storage.getByRef(ref)
+
+        then:
+        1 * delegate.getByRef(ref) >> expBlob
+        0 * _
+        response != null
+        response.is(expBlob)
+    }
+
+    def "get if not found"() {
+        when:
+        def response = storage.getByRef(ref)
+
+        then:
+        1 * delegate.getByRef(ref) >> null
+        0 * _
+        response == null
+    }
+
+    def "find"() {
+        given:
+        def expBlob = blobBuilder.build()
+
+        when:
+        def response = storage.findByRef(ref)
+
+        then:
+        1 * delegate.findByRef(ref) >> Optional.of(expBlob)
+        0 * _
+        response.isPresent()
+        response.get().is(expBlob)
+    }
+
+    def "find if not found"() {
+        when:
+        def response = storage.findByRef(ref)
+
+        then:
+        1 * delegate.findByRef(ref) >> Optional.empty()
+        0 * _
+        response.isEmpty()
+    }
+
+    def "delete"() {
+        when:
+        def response = storage.deleteByRef(ref)
+
+        then:
+        1 * delegate.deleteByRef(ref) >> true
+        1 * publisher.publish({
+            it instanceof HardDeleteBlobEvent && it.ref == ref
+        })
+        0 * _
+        response
+    }
+
+    def "delete if not found"() {
+        when:
+        def response = storage.deleteByRef(ref)
+
+        then:
+        1 * delegate.deleteByRef(ref) >> false
+        0 * _
+        !response
+    }
+
+    def "update"() {
+        given:
+        def request = DefaultUpdateAttributesRequest.builder()
+            .build()
+        def expResponse = new DefaultUpdateAttributesResponse(blobBuilder.build())
+
+        when:
+        def response = storage.updateByRef(ref, request)
+
+        then:
+        1 * delegate.updateByRef(ref, _) >> expResponse
+        1 * publisher.publish({
+            it instanceof UpdateAttributesBlobEvent && it.ref == ref
+        })
+        0 * _
+        response.is(expResponse)
+    }
+
+    def "update if not found"() {
+        given:
+        def request = DefaultUpdateAttributesRequest.builder()
+            .build()
+
+        when:
+        def response = storage.updateByRef(ref, request)
+
+        then:
+        thrown(NotFoundBlobException)
+        1 * delegate.updateByRef(ref, _) >> { throw new NotFoundBlobException(ref) }
+        0 * _
     }
 }

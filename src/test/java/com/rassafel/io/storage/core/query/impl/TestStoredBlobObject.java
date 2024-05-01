@@ -32,6 +32,10 @@ public class TestStoredBlobObject extends DefaultBlobObject implements StoredBlo
         return new BuilderImpl();
     }
 
+    public static Builder builder(StoredBlobObject object) {
+        return new BuilderImpl(object);
+    }
+
     public interface Builder extends DefaultBlobObject.Builder {
 
         Builder implementation(Object implementation);
@@ -71,6 +75,16 @@ public class TestStoredBlobObject extends DefaultBlobObject implements StoredBlo
         private InputStream inputStream;
 
         protected BuilderImpl() {
+        }
+
+        public BuilderImpl(StoredBlobObject object) {
+            super(object);
+            this.implementation = object.getImplementation();
+            try {
+                this.inputStream = object.toInputStream();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
         }
 
         @Override

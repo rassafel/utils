@@ -95,7 +95,7 @@ public class RoutingBlobStorage implements BlobStorage {
     protected String extractName(String ref) {
         val i = ref.indexOf(idDelimiter);
         if (i == -1) return null;
-        return ref.substring(i + idDelimiter.length());
+        return ref.substring(0, i);
     }
 
     protected BlobStorage findStorageByName(@Nullable String storageName) {

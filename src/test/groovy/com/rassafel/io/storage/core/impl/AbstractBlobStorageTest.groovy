@@ -1,5 +1,6 @@
 package com.rassafel.io.storage.core.impl
 
+import com.rassafel.io.storage.core.BlobStorageSpecification
 import com.rassafel.io.storage.core.StoredBlobObject
 import com.rassafel.io.storage.core.impl.keygen.StaticKeyGenerator
 import com.rassafel.io.storage.core.query.StoreBlobRequest
@@ -8,9 +9,8 @@ import com.rassafel.io.storage.core.query.UpdateAttributesRequest
 import com.rassafel.io.storage.core.query.UpdateAttributesResponse
 import com.rassafel.io.storage.core.query.impl.DefaultStoreBlobRequest
 import com.rassafel.io.storage.core.util.FileTypeUtils
-import spock.lang.Specification
 
-class AbstractBlobStorageTest extends Specification {
+class AbstractBlobStorageTest extends BlobStorageSpecification {
     def staticKey = "static"
     def storage = new AbstractBlobStorage(new StaticKeyGenerator(staticKey)) {
         public String blobKey;
@@ -41,13 +41,13 @@ class AbstractBlobStorageTest extends Specification {
 
     def "Store without contentType and without name extension"() {
         given:
+        def body = "Test"
         def request = DefaultStoreBlobRequest.builder()
             .originalName(name)
             .attribute("X-Meta", "Value")
-            .size(1).build()
-        def is = new ByteArrayInputStream(new byte[]{0});
+            .size(getBytesSize(body)).build()
         when:
-        storage.store(is, request)
+        storage.store(toInputStream(body), request)
 
         then:
         verifyAll(storage) {
@@ -61,14 +61,14 @@ class AbstractBlobStorageTest extends Specification {
 
     def "Store without contentType and with name extension"() {
         given:
+        def body = "Test"
         def originalName = "${name}.$extension"
         def request = DefaultStoreBlobRequest.builder()
             .originalName(originalName)
             .attribute("X-Meta", "Value")
-            .size(1).build()
-        def is = new ByteArrayInputStream(new byte[]{0});
+            .size(getBytesSize(body)).build()
         when:
-        storage.store(is, request)
+        storage.store(toInputStream(body), request)
 
         then:
         verifyAll(storage) {
@@ -84,15 +84,15 @@ class AbstractBlobStorageTest extends Specification {
 
     def "Store with contentType and with name extension"() {
         given:
+        def body = "Test"
         def originalName = "${name}.$extension"
         def request = DefaultStoreBlobRequest.builder()
             .originalName(originalName)
             .contentType(contentType)
             .attribute("X-Meta", "Value")
-            .size(1).build()
-        def is = new ByteArrayInputStream(new byte[]{0});
+            .size(getBytesSize(body)).build()
         when:
-        storage.store(is, request)
+        storage.store(toInputStream(body), request)
 
         then:
         verifyAll(storage) {
@@ -108,14 +108,14 @@ class AbstractBlobStorageTest extends Specification {
 
     def "Store with contentType and without name extension"() {
         given:
+        def body = "Test"
         def request = DefaultStoreBlobRequest.builder()
             .originalName(name)
             .contentType(contentType)
             .attribute("X-Meta", "Value")
-            .size(1).build()
-        def is = new ByteArrayInputStream(new byte[]{0});
+            .size(getBytesSize(body)).build()
         when:
-        storage.store(is, request)
+        storage.store(toInputStream(body), request)
 
         then:
         verifyAll(storage) {

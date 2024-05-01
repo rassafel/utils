@@ -1,6 +1,7 @@
 package com.rassafel.io.storage.core.event.wrapper
 
 import com.rassafel.io.storage.core.BlobStorage
+import com.rassafel.io.storage.core.BlobStorageSpecification
 import com.rassafel.io.storage.core.NotFoundBlobException
 import com.rassafel.io.storage.core.event.StubBlobEventPublisher
 import com.rassafel.io.storage.core.event.type.HardDeleteBlobEvent
@@ -10,16 +11,14 @@ import com.rassafel.io.storage.core.query.impl.DefaultStoreBlobRequest
 import com.rassafel.io.storage.core.query.impl.DefaultUpdateAttributesRequest
 import com.rassafel.io.storage.mem.InMemoryBlobStorage
 import spock.lang.Shared
-import spock.lang.Specification
 import spock.util.time.MutableClock
 
-import java.nio.charset.StandardCharsets
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.ZoneOffset
 
-class EventPublisherBlobStorageWrapperTest extends Specification {
+class EventPublisherBlobStorageWrapperTest extends BlobStorageSpecification {
     @Shared
     LocalDateTime now = LocalDateTime.of(LocalDate.of(2024, 4, 30), LocalTime.MIDNIGHT)
     MutableClock clock = new MutableClock(now.toInstant(ZoneOffset.UTC), ZoneOffset.UTC)
@@ -70,10 +69,10 @@ class EventPublisherBlobStorageWrapperTest extends Specification {
             getAttribute("X-Delete-Meta") == "Value3"
             getContentType() == "text/plain"
             getOriginalName() == name
-            fromInputStream(toInputStream()) == body
+            blobToString(it) == body
             getUploadedAt() == now
             getLastModifiedAt() == now
-            getSize() == body.getBytes(StandardCharsets.UTF_8).length
+            getSize() == getBytesSize(body)
             getStoredRef() == expectedRef
         }
 
@@ -105,10 +104,10 @@ class EventPublisherBlobStorageWrapperTest extends Specification {
             getAttribute("X-New-Meta") == "Value5"
             getContentType() == "text/plain"
             getOriginalName() == name
-            fromInputStream(toInputStream()) == body
+            blobToString(it) == body
             getUploadedAt() == now
             getLastModifiedAt() == tickedNow
-            getSize() == body.getBytes(StandardCharsets.UTF_8).length
+            getSize() == getBytesSize(body)
             getStoredRef() == expectedRef
         }
 
@@ -159,14 +158,6 @@ class EventPublisherBlobStorageWrapperTest extends Specification {
         verifyAll(publisher.events) {
             size() == 0
         }
-    }
-
-    def toInputStream(String value) {
-        return new ByteArrayInputStream(value.getBytes(StandardCharsets.UTF_8))
-    }
-
-    def fromInputStream(InputStream inputStream) {
-        return new String(inputStream.readAllBytes(), StandardCharsets.UTF_8)
     }
 
     def existsCheck(boolean expected, String ref, BlobStorage storage) {

@@ -39,7 +39,9 @@ public class EventPublisherBlobStorageWrapper extends DefaultDelegatedBlobStorag
     @Override
     public StoreBlobResponse store(InputStream inputStream, StoreBlobRequest request) {
         val response = super.store(inputStream, request);
-        val event = new UploadBlobEvent(getDelegate(), clock, response.getStoredObject().getStoredRef());
+        val ref = response.getStoredObject().getStoredRef();
+        val event = new UploadBlobEvent(getDelegate(), clock, ref);
+        log.debug("Publish UploadBlobEvent, ref: {}", ref);
         publisher.publish(event);
         return response;
     }
@@ -49,6 +51,7 @@ public class EventPublisherBlobStorageWrapper extends DefaultDelegatedBlobStorag
         val result = super.deleteByRef(ref);
         if (result) {
             val event = new HardDeleteBlobEvent(getDelegate(), clock, ref);
+            log.debug("Publish HardDeleteBlobEvent, ref: {}", ref);
             publisher.publish(event);
         }
         return result;
@@ -58,6 +61,7 @@ public class EventPublisherBlobStorageWrapper extends DefaultDelegatedBlobStorag
     public UpdateAttributesResponse updateByRef(String ref, UpdateAttributesRequest request) {
         val response = super.updateByRef(ref, request);
         val event = new UpdateAttributesBlobEvent(getDelegate(), clock, ref);
+        log.debug("Publish UpdateAttributesBlobEvent, ref: {}", ref);
         publisher.publish(event);
         return response;
     }

@@ -18,7 +18,6 @@ import org.springframework.lang.Nullable;
 import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.Optional;
-import java.util.function.Predicate;
 
 /**
  * Soft delete blob storage wrapper.
@@ -59,7 +58,11 @@ public class SoftDeleteBlobStorageWrapper extends DefaultDelegatedBlobStorage {
     @Override
     public StoredBlobObject getByRef(String ref) {
         val blob = getByRefIgnoreDeleted(ref);
-        if (blob == null || isDeleted(blob)) return null;
+        if (blob == null) return null;
+        if (isDeleted(blob)) {
+            log.trace("Blob soft deleted, skip, ref: {}", ref);
+            return null;
+        }
         return blob;
     }
 
@@ -71,7 +74,13 @@ public class SoftDeleteBlobStorageWrapper extends DefaultDelegatedBlobStorage {
     @Override
     public Optional<StoredBlobObject> findByRef(String ref) {
         return findByRefIgnoreDeleted(ref)
-            .filter(Predicate.not(this::isDeleted));
+            .filter(b -> {
+                if (isDeleted(b)) {
+                    log.trace("Blob soft deleted, skip, ref: {}", ref);
+                    return false;
+                }
+                return true;
+            });
     }
 
     public Optional<StoredBlobObject> findByRefIgnoreDeleted(String ref) {
@@ -89,8 +98,16 @@ public class SoftDeleteBlobStorageWrapper extends DefaultDelegatedBlobStorage {
         val request = DefaultUpdateAttributesRequest.builder()
             .attribute(deletedAttribute, timestamp.toString())
             .build();
-        val response = updateByRefIgnoreDeleted(ref, request);
+        log.trace("Add soft delete attribute to blob, ref: {}; '{}': '{}'", ref, deletedAttribute, timestamp);
+        try {
+            val response = updateByRefIgnoreDeleted(ref, request);
+        } catch (NotFoundBlobException ex) {
+            log.debug("Fail add soft delete attribute to blob, ref: {}; '{}': '{}'", ref, deletedAttribute, timestamp);
+            return false;
+        }
+        log.debug("Soft delete attribute added to blob, ref: {}; '{}': '{}'", ref, deletedAttribute, timestamp);
         val event = new SoftDeleteBlobEvent(getDelegate(), timestamp, ref);
+        log.debug("Publish SoftDeleteBlobEvent, ref: {}", ref);
         publisher.publish(event);
         return true;
     }
@@ -106,14 +123,22 @@ public class SoftDeleteBlobStorageWrapper extends DefaultDelegatedBlobStorage {
         val blob = findByRefIgnoreDeleted(ref)
             .orElseThrow(() -> new NotFoundBlobException(ref));
         if (!isDeleted(blob)) return false;
+        val timestamp = blob.getAttribute(deletedAttribute);
         val request = DefaultUpdateAttributesRequest.builder()
             .removeAttribute(deletedAttribute)
             .build();
-        val response = updateByRefIgnoreDeleted(ref, request);
+        log.trace("Remove soft delete attribute to blob, ref: {}; '{}': '{}'", ref, deletedAttribute, timestamp);
+        try {
+            val response = updateByRefIgnoreDeleted(ref, request);
+        } catch (NotFoundBlobException ex) {
+            log.debug("Fail remove soft delete attribute from blob, ref: {}; '{}': '{}'", ref, deletedAttribute,
+                timestamp);
+            throw ex;
+        }
+        log.debug("Soft delete attribute removed to blob, ref: {}; '{}': '{}'", ref, deletedAttribute, timestamp);
         val event = new RestoreSoftDeletedBlobEvent(getDelegate(), clock, ref);
         publisher.publish(event);
         return true;
-
     }
 
     public boolean hardDeleteByRef(String ref) {

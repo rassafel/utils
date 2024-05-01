@@ -7,6 +7,8 @@ import com.rassafel.io.storage.core.query.StoreBlobRequest;
 import com.rassafel.io.storage.core.query.StoreBlobResponse;
 import com.rassafel.io.storage.core.query.UpdateAttributesRequest;
 import com.rassafel.io.storage.core.query.UpdateAttributesResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.InputStream;
 import java.util.Optional;
@@ -15,6 +17,7 @@ import java.util.Optional;
  * Delegated BlobStorage
  */
 public class DefaultDelegatedBlobStorage implements BlobStorage {
+    protected final Logger log = LoggerFactory.getLogger(getClass());
     private final BlobStorage delegate;
 
     public DefaultDelegatedBlobStorage(BlobStorage delegate) {

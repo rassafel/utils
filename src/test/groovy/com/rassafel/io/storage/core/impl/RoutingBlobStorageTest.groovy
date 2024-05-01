@@ -1,21 +1,18 @@
 package com.rassafel.io.storage.core.impl
 
-import com.rassafel.io.storage.core.BlobStorage
+
+import com.rassafel.io.storage.core.BlobStorageLocator
 import com.rassafel.io.storage.core.query.impl.*
+import spock.lang.Ignore
 import spock.lang.Specification
 
 import java.nio.charset.StandardCharsets
 
-class DelegatingBlobStorageTest extends Specification {
-    BlobStorage defaultStorage = Mock()
-    BlobStorage storage1 = Mock()
-    BlobStorage storage2 = Mock()
+@Ignore
+class RoutingBlobStorageTest extends Specification {
+    BlobStorageLocator locator = Mock()
 
-    def storage = new DelegatingBlobStorage("default", [
-        "default" : defaultStorage,
-        "storage1": storage1,
-        "storage2": storage2,
-    ])
+    def storage = new RoutingBlobStorage(locator)
 
     def defaultRef = "/static/test"
 

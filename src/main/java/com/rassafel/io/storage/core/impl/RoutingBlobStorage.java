@@ -22,7 +22,7 @@ import java.util.Optional;
 @Slf4j
 @RequiredArgsConstructor
 public class RoutingBlobStorage implements BlobStorage {
-    protected static final String DEFAULT_DELIMITER = ":";
+    protected static final String DEFAULT_DELIMITER = ":/";
     private final String idDelimiter;
     private final BlobStorageLocator locator;
 

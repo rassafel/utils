@@ -28,7 +28,7 @@ import java.util.Optional;
  */
 @Slf4j
 public class DefaultBlobStorageLocator implements BlobStorageLocator {
-    protected static final String DEFAULT_DELIMITER = ":";
+    protected static final String DEFAULT_DELIMITER = ":/";
     private final String idDelimiter;
     private String defaultStorageName;
     private final Map<String, BlobStorage> storages;

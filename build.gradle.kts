@@ -30,6 +30,12 @@ fun dependencyModuleName(module: String, version: String?): String =
 fun DependencyHandler.kotlinx(module: String, version: String? = null): String =
     dependencyModuleName("org.jetbrains.kotlinx:kotlinx-$module", version)
 
+fun DependencyHandler.spring(
+    module: String, version: String? = null
+): String = dependencyModuleName(
+    "org.springframework:spring-$module", version
+)
+
 fun DependencyHandler.springBoot(
     module: String, version: String? = null
 ): String = dependencyModuleName(

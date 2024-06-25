@@ -10,12 +10,6 @@ import java.io.InputStream;
  */
 public interface StoredBlobObject extends BlobObject {
     /**
-     * @return the underlying implementation object (based on the provider)
-     */
-    @Nullable
-    Object getImplementation();
-
-    /**
      * @return input stream of blob
      * @throws IOException
      */

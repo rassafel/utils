@@ -9,18 +9,11 @@ import java.time.LocalDateTime;
 import java.util.Map;
 
 public class TestStoredBlobObject extends DefaultBlobObject implements StoredBlobObject {
-    private final Object implementation;
     private final InputStream inputStream;
 
     protected TestStoredBlobObject(BuilderImpl builder) {
         super(builder);
-        implementation = builder.implementation;
         inputStream = builder.inputStream;
-    }
-
-    @Override
-    public Object getImplementation() {
-        return implementation;
     }
 
     @Override
@@ -37,8 +30,6 @@ public class TestStoredBlobObject extends DefaultBlobObject implements StoredBlo
     }
 
     public interface Builder extends DefaultBlobObject.Builder {
-
-        Builder implementation(Object implementation);
 
         Builder inputStream(InputStream inputStream);
 
@@ -71,7 +62,6 @@ public class TestStoredBlobObject extends DefaultBlobObject implements StoredBlo
     }
 
     protected static class BuilderImpl extends DefaultBlobObject.BuilderImpl implements Builder {
-        private Object implementation;
         private InputStream inputStream;
 
         protected BuilderImpl() {
@@ -79,18 +69,11 @@ public class TestStoredBlobObject extends DefaultBlobObject implements StoredBlo
 
         public BuilderImpl(StoredBlobObject object) {
             super(object);
-            this.implementation = object.getImplementation();
             try {
                 this.inputStream = object.toInputStream();
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
-        }
-
-        @Override
-        public Builder implementation(Object implementation) {
-            this.implementation = implementation;
-            return this;
         }
 
         @Override

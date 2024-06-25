@@ -37,11 +37,6 @@ public class InMemoryStoredBlobObject extends DefaultBlobObject implements Store
     }
 
     @Override
-    public Object getImplementation() {
-        return Arrays.copyOf(bytes, bytes.length);
-    }
-
-    @Override
     public InputStream toInputStream() throws IOException {
         return new ByteArrayInputStream(bytes);
     }

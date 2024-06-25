@@ -19,11 +19,6 @@ public class DefaultDelegationStoredBlobObject extends DefaultDelegationBlobObje
     }
 
     @Override
-    public Object getImplementation() {
-        return getDelegate().getImplementation();
-    }
-
-    @Override
     public InputStream toInputStream() throws IOException {
         return getDelegate().toInputStream();
     }

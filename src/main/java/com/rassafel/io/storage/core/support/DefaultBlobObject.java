@@ -6,10 +6,10 @@ import lombok.Getter;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.lang.Nullable;
+import org.springframework.util.LinkedCaseInsensitiveMap;
 
 import java.time.LocalDateTime;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -30,7 +30,8 @@ public class DefaultBlobObject implements BlobObject {
         this.uploadedAt = builder.uploadedAt;
         this.lastModifiedAt = builder.lastModifiedAt;
         this.size = builder.size;
-        this.attributes = new HashMap<>(builder.attributes);
+        this.attributes = new LinkedCaseInsensitiveMap<>(builder.attributes.size());
+        this.attributes.putAll(builder.attributes);
     }
 
     public Map<String, String> getAttributes() {
@@ -81,7 +82,7 @@ public class DefaultBlobObject implements BlobObject {
         private LocalDateTime uploadedAt;
         private LocalDateTime lastModifiedAt;
         private long size;
-        private Map<String, String> attributes = new LinkedHashMap<>();
+        private Map<String, String> attributes = new LinkedCaseInsensitiveMap<>();
 
         protected BuilderImpl() {
         }
@@ -152,6 +153,7 @@ public class DefaultBlobObject implements BlobObject {
 
         @Override
         public Builder attribute(String key, @Nullable String value) {
+            key = StringUtils.lowerCase(key);
             if (StringUtils.isBlank(value)) {
                 this.attributes.remove(key);
             } else {

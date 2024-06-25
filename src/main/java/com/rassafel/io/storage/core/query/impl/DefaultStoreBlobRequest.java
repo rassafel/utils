@@ -7,8 +7,8 @@ import com.rassafel.io.storage.core.query.StoreBlobRequest;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.lang.Nullable;
+import org.springframework.util.LinkedCaseInsensitiveMap;
 
-import java.util.LinkedHashMap;
 import java.util.Map;
 
 @Getter
@@ -24,7 +24,8 @@ public class DefaultStoreBlobRequest implements StoreBlobRequest,
         this.originalName = builder.originalName;
         this.contentType = builder.contentType;
         this.size = builder.size;
-        this.attributes = new LinkedHashMap<>(builder.attributes);
+        this.attributes = new LinkedCaseInsensitiveMap<>(builder.attributes.size());
+        this.attributes.putAll(builder.attributes);
     }
 
     public static Builder builder() {
@@ -52,7 +53,7 @@ public class DefaultStoreBlobRequest implements StoreBlobRequest,
 
         private Long size;
 
-        private Map<String, String> attributes = new LinkedHashMap<>();
+        private Map<String, String> attributes = new LinkedCaseInsensitiveMap<>();
 
         public BuilderImpl() {
         }
@@ -97,10 +98,10 @@ public class DefaultStoreBlobRequest implements StoreBlobRequest,
 
         @Override
         public Builder attributes(Map<String, String> attributes) {
-            if (attributes == null) {
-                attributes = new LinkedHashMap<>();
+            this.attributes.clear();
+            if (attributes != null) {
+                this.attributes.putAll(attributes);
             }
-            this.attributes = new LinkedHashMap<>(attributes);
             return this;
         }
 

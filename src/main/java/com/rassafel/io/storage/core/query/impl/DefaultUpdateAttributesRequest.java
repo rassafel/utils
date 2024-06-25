@@ -4,9 +4,8 @@ import com.rassafel.io.storage.core.query.UpdateAttributesRequest;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.springframework.lang.Nullable;
+import org.springframework.util.LinkedCaseInsensitiveMap;
 
-import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
@@ -18,7 +17,8 @@ public class DefaultUpdateAttributesRequest implements UpdateAttributesRequest {
     private final Map<String, String> attributes;
 
     private DefaultUpdateAttributesRequest(BuilderImpl builder) {
-        this.attributes = new HashMap<>(builder.attributes);
+        this.attributes = new LinkedCaseInsensitiveMap<>(builder.attributes.size());
+        this.attributes.putAll(builder.attributes);
     }
 
     @Override
@@ -42,7 +42,7 @@ public class DefaultUpdateAttributesRequest implements UpdateAttributesRequest {
     }
 
     private static class BuilderImpl implements Builder {
-        private Map<String, String> attributes = new LinkedHashMap<>();
+        private Map<String, String> attributes = new LinkedCaseInsensitiveMap<>();
 
         private BuilderImpl(DefaultUpdateAttributesRequest request) {
             request.getAttributes().forEach(this::attribute);

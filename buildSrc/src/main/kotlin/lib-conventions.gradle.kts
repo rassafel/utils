@@ -34,6 +34,11 @@ tasks {
         options.compilerArgs.add("-parameters")
     }
 
+    compileTestJava {
+        options.encoding = "UTF-8"
+        options.compilerArgs.add("-parameters")
+    }
+
     test {
         useJUnitPlatform()
     }

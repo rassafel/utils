@@ -17,5 +17,5 @@
 package com.rassafel.bus;
 
 public interface PreHandleCommand {
-    void accept(Command<?> command);
+    void accept(CommandHandler<?, ?> handler, Command<?> command);
 }

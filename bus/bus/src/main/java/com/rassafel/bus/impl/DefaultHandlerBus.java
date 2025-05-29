@@ -25,9 +25,9 @@ public class DefaultHandlerBus implements HandlerBus {
 
     public DefaultHandlerBus(HandlerRegistry registry) {
         this(registry,
-            query -> {
+            (handler, query) -> {
             },
-            command -> {
+            (handler, command) -> {
             });
     }
 
@@ -40,14 +40,14 @@ public class DefaultHandlerBus implements HandlerBus {
     @Override
     public <R, C extends Command<R>> R executeCommand(C command) {
         var handler = (CommandHandler<R, C>) registry.getCommandHandler(command.getClass());
-        commandPreHandler.accept(command);
+        commandPreHandler.accept(handler, command);
         return handler.handle(command);
     }
 
     @Override
     public <R, Q extends Query<R>> R executeQuery(Q query) {
         var handler = (QueryHandler<R, Q>) registry.getQueryHandler(query.getClass());
-        queryPreHandler.accept(query);
+        queryPreHandler.accept(handler, query);
         return handler.handle(query);
     }
 }

@@ -14,8 +14,12 @@
  * limitations under the License.
  */
 
-package com.rassafel.bus;
+package com.rassafel.bus.support;
 
+
+import com.rassafel.bus.Command;
+import com.rassafel.bus.CommandHandler;
+import com.rassafel.bus.PreHandleCommand;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -43,9 +47,9 @@ public class CompositePreHandleCommand implements PreHandleCommand {
     }
 
     @Override
-    public void accept(Command<?> command) {
-        for (var handler : handlers) {
-            handler.accept(command);
+    public void accept(CommandHandler<?, ?> handler, Command<?> command) {
+        for (var preHandler : handlers) {
+            preHandler.accept(handler, command);
         }
     }
 }

@@ -17,5 +17,5 @@
 package com.rassafel.bus;
 
 public interface PreHandleQuery {
-    void accept(Query<?> query);
+    void accept(QueryHandler<?, ?> handler, Query<?> query);
 }

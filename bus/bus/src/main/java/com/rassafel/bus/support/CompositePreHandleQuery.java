@@ -14,8 +14,12 @@
  * limitations under the License.
  */
 
-package com.rassafel.bus;
+package com.rassafel.bus.support;
 
+
+import com.rassafel.bus.PreHandleQuery;
+import com.rassafel.bus.Query;
+import com.rassafel.bus.QueryHandler;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -43,9 +47,9 @@ public class CompositePreHandleQuery implements PreHandleQuery {
     }
 
     @Override
-    public void accept(Query<?> query) {
-        for (var handler : handlers) {
-            handler.accept(query);
+    public void accept(QueryHandler<?, ?> handler, Query<?> query) {
+        for (var preHandler : handlers) {
+            preHandler.accept(handler, query);
         }
     }
 }

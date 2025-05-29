@@ -19,6 +19,8 @@ package com.rassafel.bus.config;
 import com.rassafel.bus.*;
 import com.rassafel.bus.impl.DefaultHandlerBus;
 import com.rassafel.bus.impl.DefaultHandlerRegistry;
+import com.rassafel.bus.support.CompositePreHandleCommand;
+import com.rassafel.bus.support.CompositePreHandleQuery;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;

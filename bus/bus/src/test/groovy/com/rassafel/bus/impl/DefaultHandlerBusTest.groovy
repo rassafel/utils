@@ -38,7 +38,7 @@ class DefaultHandlerBusTest extends Specification {
         then:
         thrown(RuntimeException)
         1 * registry.getCommandHandler(_) >> commandHandler
-        1 * commandPreHandler.accept(_)
+        1 * commandPreHandler.accept(_, _)
         1 * commandHandler.handle(_) >> { throw new RuntimeException() }
     }
 
@@ -64,7 +64,7 @@ class DefaultHandlerBusTest extends Specification {
 
         then:
         1 * registry.getCommandHandler(_) >> commandHandler
-        1 * commandPreHandler.accept(_)
+        1 * commandPreHandler.accept(_, _)
         1 * commandHandler.handle(_) >> result
 
         actual.is(result)
@@ -81,7 +81,7 @@ class DefaultHandlerBusTest extends Specification {
         then:
         thrown(RuntimeException)
         1 * registry.getQueryHandler(_) >> queryHandler
-        1 * queryPreHandler.accept(_)
+        1 * queryPreHandler.accept(_, _)
         1 * queryHandler.handle(_) >> { throw new RuntimeException() }
     }
 
@@ -107,7 +107,7 @@ class DefaultHandlerBusTest extends Specification {
 
         then:
         1 * registry.getQueryHandler(_) >> queryHandler
-        1 * queryPreHandler.accept(_)
+        1 * queryPreHandler.accept(_, _)
         1 * queryHandler.handle(_) >> result
 
         actual.is(result)

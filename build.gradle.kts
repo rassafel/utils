@@ -1,105 +1,48 @@
+import org.jetbrains.gradle.ext.EncodingConfiguration
+import org.jetbrains.gradle.ext.copyright
+import org.jetbrains.gradle.ext.encodings
+import org.jetbrains.gradle.ext.settings
+
 plugins {
-    id("java")
-    id("groovy")
-    id("org.springframework.boot")
-    id("io.spring.dependency-management")
     idea
+    org.jetbrains.gradle.plugin.`idea-ext`
+    io.freefair.`git-version`
+//    jacoco
+    `test-report-aggregation`
+//    io.freefair.`aggregate-jacoco-report`
+//    org.barfuin.gradle.jacocolog
 }
 
-group = "com.rassafel"
-java.sourceCompatibility = JavaVersion.VERSION_17
-val isCI = System.getenv().containsKey("CI")
-val amazonVersion: String by project
-val spockVersion: String by project
+idea.project {
+    settings {
+        copyright {
+            useDefault = "DefaultCopyright"
+            profiles {
+                create("DefaultCopyright") {
+                    notice =
+                        """Copyright 2024-${'$'}today.year the original author or authors.
 
-idea.module {
-    isDownloadSources = !isCI
-    isDownloadJavadoc = !isCI
-}
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
 
-repositories { mavenCentral() }
+     https://www.apache.org/licenses/LICENSE-2.0
 
-tasks.withType<Test> {
-    useJUnitPlatform()
-}
-
-//region DependencyHandler extensions
-fun dependencyModuleName(module: String, version: String?): String =
-    module + (version?.let { ":$it" } ?: "")
-
-fun DependencyHandler.kotlinx(module: String, version: String? = null): String =
-    dependencyModuleName("org.jetbrains.kotlinx:kotlinx-$module", version)
-
-fun DependencyHandler.spring(
-    module: String, version: String? = null
-): String = dependencyModuleName(
-    "org.springframework:spring-$module", version
-)
-
-fun DependencyHandler.springBoot(
-    module: String, version: String? = null
-): String = dependencyModuleName(
-    "org.springframework.boot:spring-boot-$module", version
-)
-
-fun DependencyHandler.springBootStarter(
-    module: String, version: String? = null
-): String = springBoot("starter-$module", version)
-
-fun DependencyHandler.springSecurity(
-    module: String, version: String? = null
-): String = dependencyModuleName(
-    "org.springframework.security:spring-security-$module", version
-)
-
-fun DependencyHandler.spock(
-    module: String, version: String? = null
-): String = dependencyModuleName(
-    "org.spockframework:spock-$module", version
-)
-//endregion
-
-configurations {
-    compileOnly {
-        extendsFrom(configurations.annotationProcessor.get())
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License."""
+                }
+            }
+        }
+        encodings {
+            encoding = "UTF-8"
+            bomPolicy = EncodingConfiguration.BomPolicy.WITH_NO_BOM
+            properties {
+                encoding = "UTF-8"
+                transparentNativeToAsciiConversion = false
+            }
+        }
     }
-    testCompileOnly {
-        extendsFrom(configurations.testAnnotationProcessor.get())
-    }
-}
-
-dependencyManagement {
-    imports {
-        mavenBom("software.amazon.awssdk:bom:$amazonVersion")
-        mavenBom("org.spockframework:spock-bom:$spockVersion")
-    }
-}
-
-dependencies {
-    annotationProcessor("org.projectlombok:lombok")
-    testAnnotationProcessor("org.projectlombok:lombok")
-
-    implementation(springBoot("starter"))
-    implementation(springBootStarter("data-jpa"))
-    implementation(springBootStarter("web"))
-    implementation(springBootStarter("validation"))
-    implementation(springBootStarter("security"))
-    implementation(springBootStarter("json"))
-    implementation(springBootStarter("mail"))
-
-    implementation("commons-io:commons-io:2.16.1")
-    implementation("com.google.guava:guava:33.1.0-jre")
-    implementation("org.apache.commons:commons-lang3")
-    implementation("org.apache.commons:commons-collections4:4.4")
-
-    implementation("software.amazon.awssdk:s3")
-
-    testImplementation(springBootStarter("test"))
-    testImplementation(spock("core"))
-    testImplementation(spock("spring"))
-    testImplementation("net.bytebuddy:byte-buddy")
-}
-
-tasks.test {
-    useJUnitPlatform()
 }

@@ -1,0 +1,24 @@
+[versions]
+spring-boot = "3.4.5"
+amazon = "2.31.47"
+apache-lang = "3.17.0"
+apache-io = "2.19.0"
+apache-collections = "4.5.0"
+spock = "2.3-groovy-4.0"
+
+[libraries]
+slf4j-api = { module = "org.slf4j:slf4j-api" }
+apache-lang = { module = "org.apache.commons:commons-lang3", version.ref = "apache-lang" }
+apache-io = { module = "commons-io:commons-io", version.ref = "apache-io" }
+apache-collections = { module = "org.apache.commons:commons-collections4", version.ref = "apache-collections" }
+aws-s3 = { module = "software.amazon.awssdk:s3" }
+aspectj = { module = "org.aspectj:aspectjweaver" }
+servlet = { module = "jakarta.servlet:jakarta.servlet-api" }
+hibernate-validation = { module = "org.hibernate.validator:hibernate-validator" }
+spring-context = { module = "org.springframework:spring-context" }
+spring-web = { module = "org.springframework:spring-web" }
+spring-webmvc = { module = "org.springframework:spring-webmvc" }
+spring-boot = { module = "org.springframework.boot:spring-boot" }
+spring-boot-autoconfigure = { module = "org.springframework.boot:spring-boot-autoconfigure" }
+spring-security-core = { module = "org.springframework.security:spring-security-core" }
+spock-core = { module = "org.spockframework:spock-core", version.ref = "spock" }

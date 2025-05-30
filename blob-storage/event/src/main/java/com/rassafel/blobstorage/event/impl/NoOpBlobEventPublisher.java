@@ -21,7 +21,7 @@ import com.rassafel.blobstorage.event.BlobEventPublisher;
 import com.rassafel.blobstorage.event.BlobListener;
 
 /**
- * Event publisher to void
+ * No-op implementation of {@link BlobEventPublisher}. Send events to void.
  */
 public class NoOpBlobEventPublisher implements BlobEventPublisher {
     private static final NoOpBlobEventPublisher INSTANCE = new NoOpBlobEventPublisher();

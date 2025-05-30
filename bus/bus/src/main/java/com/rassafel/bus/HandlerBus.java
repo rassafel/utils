@@ -16,8 +16,27 @@
 
 package com.rassafel.bus;
 
+/**
+ * A bus that handles commands and queries.
+ */
 public interface HandlerBus {
+    /**
+     * Executes a command and returns the result of the execution.
+     *
+     * @param command the command to be executed.
+     * @param <R>     the type of the result.
+     * @param <C>     the type of the command.
+     * @return the result of the execution.
+     */
     <R, C extends Command<R>> R executeCommand(C command);
 
-    <R, Q extends Query<R>> R executeQuery(Q command);
+    /**
+     * Executes a query and returns the result of the execution.
+     *
+     * @param query the query to be executed.
+     * @param <R>   the type of the result.
+     * @param <Q>   the type of the query.
+     * @return the result of the execution.
+     */
+    <R, Q extends Query<R>> R executeQuery(Q query);
 }

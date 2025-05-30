@@ -16,6 +16,9 @@
 
 package com.rassafel.bus;
 
+/**
+ * Exception thrown when a handler fails.
+ */
 public class HandlerException extends RuntimeException {
     public HandlerException() {
     }

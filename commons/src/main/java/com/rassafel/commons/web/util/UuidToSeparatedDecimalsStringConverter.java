@@ -16,24 +16,27 @@
 
 package com.rassafel.commons.web.util;
 
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.util.Assert;
-
 import java.math.BigInteger;
 import java.util.UUID;
 
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.util.Assert;
+
+/**
+ * Converts a UUID to a string of separated decimals.
+ */
+@RequiredArgsConstructor
 public class UuidToSeparatedDecimalsStringConverter implements UuidToStringConverter {
     private static final BigInteger B = BigInteger.ONE.shiftLeft(64); // 2^64
     private static final BigInteger L = BigInteger.valueOf(Long.MAX_VALUE);
     private static final String DELIMITER = "-";
+    @NonNull
     private final String delimiter;
 
     public UuidToSeparatedDecimalsStringConverter() {
         this(DELIMITER);
-    }
-
-    public UuidToSeparatedDecimalsStringConverter(String delimiter) {
-        this.delimiter = delimiter;
     }
 
     private static String toString(BigInteger v) {
@@ -50,30 +53,38 @@ public class UuidToSeparatedDecimalsStringConverter implements UuidToStringConve
         return convertToString(uuid);
     }
 
-    public String convertToString(UUID id) {
+    /**
+     * Converts a UUID to a string of separated decimals.
+     *
+     * @param id the uuid to convert
+     * @return a string of separated decimals
+     */
+    public String convertToString(@NonNull UUID id) {
         var lo = BigInteger.valueOf(id.getLeastSignificantBits());
         var hi = BigInteger.valueOf(id.getMostSignificantBits());
 
-        if (hi.signum() < 0)
-            hi = hi.add(B);
+        if (hi.signum() < 0) hi = hi.add(B);
 
-        if (lo.signum() < 0)
-            lo = lo.add(B);
+        if (lo.signum() < 0) lo = lo.add(B);
 
         return toString(hi) + delimiter + toString(lo);
     }
 
-    public UUID convertFromString(String x) {
+    /**
+     * Converts a string of separated decimals to a UUID.
+     *
+     * @param x the string to convert
+     * @return a uuid
+     */
+    public UUID convertFromString(@NonNull String x) {
         var split = StringUtils.split(x, delimiter);
         Assert.isTrue(split.length == 2, "parts count must be equals 2");
         var hi = fromString(split[0]);
         var lo = fromString(split[1]);
 
-        if (L.compareTo(lo) < 0)
-            lo = lo.subtract(B);
+        if (L.compareTo(lo) < 0) lo = lo.subtract(B);
 
-        if (L.compareTo(hi) < 0)
-            hi = hi.subtract(B);
+        if (L.compareTo(hi) < 0) hi = hi.subtract(B);
 
         return new UUID(hi.longValueExact(), lo.longValueExact());
     }

@@ -16,18 +16,18 @@
 
 package com.rassafel.blobstorage.core.support;
 
-import com.rassafel.blobstorage.core.BlobObject;
-import com.rassafel.blobstorage.core.query.StoreBlobRequest;
+import java.time.LocalDateTime;
+import java.util.Collections;
+import java.util.Map;
+
 import lombok.Getter;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.lang.Nullable;
 import org.springframework.util.LinkedCaseInsensitiveMap;
 
-import java.time.LocalDateTime;
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import com.rassafel.blobstorage.core.BlobObject;
+import com.rassafel.blobstorage.core.query.StoreBlobRequest;
 
 @Getter
 public class DefaultBlobObject implements BlobObject {
@@ -37,7 +37,7 @@ public class DefaultBlobObject implements BlobObject {
     private final LocalDateTime uploadedAt;
     private final LocalDateTime lastModifiedAt;
     private final long size;
-    private final Map<String, String> attributes;
+    private final Map<String, String> attributes = new LinkedCaseInsensitiveMap<>(1);
 
     protected DefaultBlobObject(AbstractBuilder<?, ?> builder) {
         this.originalName = builder.originalName;
@@ -46,7 +46,6 @@ public class DefaultBlobObject implements BlobObject {
         this.uploadedAt = builder.uploadedAt;
         this.lastModifiedAt = builder.lastModifiedAt;
         this.size = builder.size;
-        this.attributes = new LinkedCaseInsensitiveMap<>(builder.attributes.size());
         this.attributes.putAll(builder.attributes);
     }
 
@@ -95,14 +94,15 @@ public class DefaultBlobObject implements BlobObject {
         O build();
     }
 
-    protected static abstract class AbstractBuilder<O extends DefaultBlobObject, B extends Builder<O, B>> implements Builder<O, B> {
+    protected abstract static class AbstractBuilder<O extends DefaultBlobObject, B extends Builder<O, B>>
+            implements Builder<O, B> {
+        protected final Map<String, String> attributes = new LinkedCaseInsensitiveMap<>(1);
         protected String originalName;
         protected String storedRef;
         protected String contentType;
         protected LocalDateTime uploadedAt;
         protected LocalDateTime lastModifiedAt;
         protected long size;
-        protected Map<String, String> attributes = new LinkedCaseInsensitiveMap<>();
 
         protected AbstractBuilder() {
         }
@@ -161,12 +161,10 @@ public class DefaultBlobObject implements BlobObject {
         }
 
         @Override
-        public B attributes(Map<String, String> attributes) {
-            if (attributes == null) {
-                this.attributes = new LinkedHashMap<>();
-            } else {
-                this.attributes = new LinkedHashMap<>(attributes.size());
-                attributes.forEach(this::attribute);
+        public B attributes(@Nullable Map<String, String> attributes) {
+            this.attributes.clear();
+            if (attributes != null) {
+                this.attributes.putAll(attributes);
             }
             return self();
         }
@@ -186,10 +184,10 @@ public class DefaultBlobObject implements BlobObject {
     }
 
     protected static class BuilderImpl extends AbstractBuilder<DefaultBlobObject, BuilderImpl> {
-        public BuilderImpl() {
+        protected BuilderImpl() {
         }
 
-        public BuilderImpl(BlobObject object) {
+        protected BuilderImpl(BlobObject object) {
             super(object);
         }
 

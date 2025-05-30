@@ -16,14 +16,13 @@
 
 package com.rassafel.bus.support;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 import com.rassafel.bus.Command;
 import com.rassafel.bus.CommandHandler;
 import com.rassafel.bus.PreHandleCommand;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
 
 public class CompositePreHandleCommand implements PreHandleCommand {
     private final List<PreHandleCommand> handlers = new ArrayList<>();

@@ -16,21 +16,22 @@
 
 package com.rassafel.blobstorage
 
-import com.rassafel.blobstorage.core.BlobStorage
-import com.rassafel.blobstorage.core.NotFoundBlobException
-import com.rassafel.blobstorage.core.impl.keygen.StaticKeyGenerator
-import com.rassafel.blobstorage.core.query.impl.DefaultStoreBlobRequest
-import com.rassafel.blobstorage.core.query.impl.DefaultUpdateAttributesRequest
-import spock.lang.Shared
-import spock.lang.Specification
-import spock.util.time.MutableClock
-
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.ZoneOffset
 
-import static BlobStorageTestUtils.*
+import spock.lang.Shared
+import spock.lang.Specification
+import spock.util.time.MutableClock
+
+import com.rassafel.blobstorage.core.BlobStorage
+import com.rassafel.blobstorage.core.NotFoundBlobException
+import com.rassafel.blobstorage.core.impl.keygen.StaticKeyGenerator
+import com.rassafel.blobstorage.core.query.impl.DefaultStoreBlobRequest
+import com.rassafel.blobstorage.core.query.impl.DefaultUpdateAttributesRequest
+
+import static com.rassafel.blobstorage.BlobStorageTestUtils.*
 
 abstract class BlobStorageSpecification extends Specification {
 
@@ -68,14 +69,14 @@ abstract class BlobStorageSpecification extends Specification {
     def "before store update"() {
         given:
         def request = DefaultUpdateAttributesRequest.builder()
-            .attribute("X-Replace-Meta", "Value4")
-            .attribute("X-New-Meta", "Value5")
-            .removeAttribute("X-Delete-Meta")
-            .build()
+                .attribute("X-Replace-Meta", "Value4")
+                .attribute("X-New-Meta", "Value5")
+                .removeAttribute("X-Delete-Meta")
+                .build()
 
         when:
         def response = storage().updateByRef(expectedRef, request)
-            .getStoredObject()
+                .getStoredObject()
 
         then:
         thrown(NotFoundBlobException)
@@ -103,11 +104,11 @@ abstract class BlobStorageSpecification extends Specification {
     def "store"() {
         given:
         def request = DefaultStoreBlobRequest.builder()
-            .originalName(name)
-            .attribute("X-Meta", "Value1")
-            .attribute("X-Replace-Meta", "Value2")
-            .attribute("X-Delete-Meta", "Value3")
-            .build()
+                .originalName(name)
+                .attribute("X-Meta", "Value1")
+                .attribute("X-Replace-Meta", "Value2")
+                .attribute("X-Delete-Meta", "Value3")
+                .build()
 
         when:
         def response = storage().store(toInputStream(body), request)
@@ -148,10 +149,10 @@ abstract class BlobStorageSpecification extends Specification {
         tickedNow = now.plusSeconds(10)
         clock.setInstant(tickedNow.toInstant(ZoneOffset.UTC))
         def request = DefaultUpdateAttributesRequest.builder()
-            .attribute("X-Replace-Meta", "Value4")
-            .attribute("X-New-Meta", "Value5")
-            .removeAttribute("X-Delete-Meta")
-            .build()
+                .attribute("X-Replace-Meta", "Value4")
+                .attribute("X-New-Meta", "Value5")
+                .removeAttribute("X-Delete-Meta")
+                .build()
 
         when:
         def response = storage().updateByRef(expectedRef, request)
@@ -226,8 +227,8 @@ abstract class BlobStorageSpecification extends Specification {
     def "after delete update"() {
         given:
         def request = DefaultUpdateAttributesRequest.builder()
-            .attribute("X-Fail-Edit", "Value6")
-            .build()
+                .attribute("X-Fail-Edit", "Value6")
+                .build()
 
         when:
         def response = storage().updateByRef(expectedRef, request)

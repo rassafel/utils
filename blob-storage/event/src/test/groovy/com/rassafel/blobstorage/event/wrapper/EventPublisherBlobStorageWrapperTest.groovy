@@ -16,7 +16,14 @@
 
 package com.rassafel.blobstorage.event.wrapper
 
-import com.rassafel.blobstorage.test.TestStoredBlobObject
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.LocalTime
+import java.time.ZoneOffset
+
+import spock.lang.Specification
+import spock.util.time.MutableClock
+
 import com.rassafel.blobstorage.core.BlobStorage
 import com.rassafel.blobstorage.core.NotFoundBlobException
 import com.rassafel.blobstorage.core.query.impl.DefaultStoreBlobRequest
@@ -27,13 +34,7 @@ import com.rassafel.blobstorage.event.BlobEventPublisher
 import com.rassafel.blobstorage.event.type.HardDeleteBlobEvent
 import com.rassafel.blobstorage.event.type.UpdateAttributesBlobEvent
 import com.rassafel.blobstorage.event.type.UploadBlobEvent
-import spock.lang.Specification
-import spock.util.time.MutableClock
-
-import java.time.LocalDate
-import java.time.LocalDateTime
-import java.time.LocalTime
-import java.time.ZoneOffset
+import com.rassafel.blobstorage.test.TestStoredBlobObject
 
 import static com.rassafel.blobstorage.BlobStorageTestUtils.toInputStream
 
@@ -46,12 +47,12 @@ class EventPublisherBlobStorageWrapperTest extends Specification {
 
 
     TestStoredBlobObject.Builder blobBuilder = TestStoredBlobObject.builder()
-        .originalName("test.txt")
-        .attribute("X-Meta", "Value1")
-        .contentType("text/plain")
-        .storedRef(ref)
-        .uploadedAt(now)
-        .lastModifiedAt(now)
+            .originalName("test.txt")
+            .attribute("X-Meta", "Value1")
+            .contentType("text/plain")
+            .storedRef(ref)
+            .uploadedAt(now)
+            .lastModifiedAt(now)
 
     BlobStorage delegate = Mock()
     BlobEventPublisher publisher = Mock()
@@ -60,10 +61,10 @@ class EventPublisherBlobStorageWrapperTest extends Specification {
     def "store"() {
         given:
         def request = DefaultStoreBlobRequest.builder()
-            .originalName("test.txt")
-            .attribute("X-Meta", "Value1")
-            .contentType("text/plain")
-            .build()
+                .originalName("test.txt")
+                .attribute("X-Meta", "Value1")
+                .contentType("text/plain")
+                .build()
         def expResponse = new DefaultStoreBlobResponse(blobBuilder.build())
 
         when:
@@ -172,7 +173,7 @@ class EventPublisherBlobStorageWrapperTest extends Specification {
     def "update"() {
         given:
         def request = DefaultUpdateAttributesRequest.builder()
-            .build()
+                .build()
         def expResponse = new DefaultUpdateAttributesResponse(blobBuilder.build())
 
         when:
@@ -190,7 +191,7 @@ class EventPublisherBlobStorageWrapperTest extends Specification {
     def "update if not found"() {
         given:
         def request = DefaultUpdateAttributesRequest.builder()
-            .build()
+                .build()
 
         when:
         def response = storage.updateByRef(ref, request)

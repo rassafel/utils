@@ -16,7 +16,11 @@
 
 package com.rassafel.commons.exception;
 
+import java.util.Locale;
+import java.util.stream.Stream;
+
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -30,8 +34,9 @@ import org.springframework.lang.Nullable;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.servlet.support.RequestContextUtils;
 
-import java.util.Locale;
-
+/**
+ * Advice for handling application exceptions.
+ */
 @Slf4j
 @RequiredArgsConstructor
 @Setter
@@ -53,9 +58,13 @@ public abstract class ApplicationExceptionAdvice implements MessageSourceAware {
         return HttpStatus.INTERNAL_SERVER_ERROR;
     };
 
+    @NonNull
     private final String titleMessagePrefix;
+    @NonNull
     private final String detailMessagePrefix;
+    @NonNull
     private final ExceptionStatusResolver typeToStatusConverter;
+
     @Nullable
     private MessageSource messageSource;
 
@@ -63,16 +72,12 @@ public abstract class ApplicationExceptionAdvice implements MessageSourceAware {
         this(TITLE_MESSAGE_PREFIX, DETAIL_MESSAGE_PREFIX, DEFAULT_STATUS_CONVERTER);
     }
 
-    public ApplicationExceptionAdvice(
-        String titleMessagePrefix,
-        String detailMessagePrefix
-    ) {
+    public ApplicationExceptionAdvice(String titleMessagePrefix, String detailMessagePrefix) {
         this(titleMessagePrefix, detailMessagePrefix, DEFAULT_STATUS_CONVERTER);
     }
 
     @ExceptionHandler
-    public ProblemDetail handleThrowable(Throwable throwable,
-                                         HttpServletRequest request) throws Throwable {
+    public ProblemDetail handleThrowable(Throwable throwable, HttpServletRequest request) throws Throwable {
         var ex = findApplicationException(throwable);
         if (ex == null) throw throwable;
         var locale = ObjectUtils.defaultIfNull(RequestContextUtils.getLocale(request), Locale.getDefault());
@@ -95,16 +100,11 @@ public abstract class ApplicationExceptionAdvice implements MessageSourceAware {
 
     @Nullable
     protected ApplicationException findApplicationException(Throwable ex) {
-        for (var throwable : ExceptionUtils.getThrowableList(ex)) {
-            if (throwable instanceof ApplicationException appEx) {
-                return appEx;
-            }
-            for (var suppressed : throwable.getSuppressed()) {
-                if (suppressed instanceof ApplicationException appEx) {
-                    return appEx;
-                }
-            }
-        }
-        return null;
+        return ExceptionUtils.getThrowableList(ex).stream()
+                .flatMap(e -> Stream.concat(Stream.of(e), Stream.of(e.getSuppressed())))
+                .filter(ApplicationException.class::isInstance)
+                .map(ApplicationException.class::cast)
+                .findFirst()
+                .orElse(null);
     }
 }

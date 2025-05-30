@@ -16,8 +16,29 @@
 
 package com.rassafel.bus;
 
+/**
+ * Registry for handlers.
+ */
 public interface HandlerRegistry {
+    /**
+     * Get handler for command.
+     *
+     * @param commandType the type of command
+     * @param <R>         the type of result
+     * @param <C>         the type of command
+     * @return the handler
+     * @throws CommandNotFoundException if command handler not found
+     */
     <R, C extends Command<R>> CommandHandler<R, C> getCommandHandler(Class<C> commandType);
 
+    /**
+     * Get handler for query.
+     *
+     * @param queryType the type of query
+     * @param <R>       the type of result
+     * @param <Q>       the type of query
+     * @return the handler
+     * @throws QueryNotFoundException if query handler not found
+     */
     <R, Q extends Query<R>> QueryHandler<R, Q> getQueryHandler(Class<Q> queryType);
 }

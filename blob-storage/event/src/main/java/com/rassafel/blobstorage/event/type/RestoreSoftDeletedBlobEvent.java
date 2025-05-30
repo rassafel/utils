@@ -16,17 +16,21 @@
 
 package com.rassafel.blobstorage.event.type;
 
-import com.rassafel.blobstorage.core.BlobStorage;
-import lombok.Getter;
-
 import java.time.Clock;
 import java.time.LocalDateTime;
+
+import lombok.Getter;
+
+import com.rassafel.blobstorage.core.BlobStorage;
 
 /**
  * Restore soft deleted blob event
  */
 @Getter
 public class RestoreSoftDeletedBlobEvent extends DefaultBlobEvent {
+    /**
+     * Reference to the restored blob
+     */
     private final String ref;
 
     public RestoreSoftDeletedBlobEvent(BlobStorage storage, String ref) {

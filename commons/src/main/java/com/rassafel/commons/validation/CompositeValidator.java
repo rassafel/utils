@@ -16,22 +16,27 @@
 
 package com.rassafel.commons.validation;
 
-import org.springframework.validation.Errors;
-import org.springframework.validation.Validator;
-
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import org.springframework.validation.Errors;
+import org.springframework.validation.Validator;
+
+/**
+ * Composite validator that combines multiple validators.
+ */
+@RequiredArgsConstructor
 public class CompositeValidator implements Validator {
     private final List<Validator> validators = new LinkedList<>();
 
-    public CompositeValidator(Collection<Validator> validators) {
+    public CompositeValidator(@NonNull Collection<Validator> validators) {
         this.validators.addAll(validators);
     }
 
-    public void registerValidator(Validator validator) {
-        org.springframework.util.Assert.notNull(validator, "validator cannot be null");
+    public void registerValidator(@NonNull Validator validator) {
         validators.add(validator);
     }
 

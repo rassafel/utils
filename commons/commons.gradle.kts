@@ -1,6 +1,6 @@
 plugins {
-    `lib-conventions`
     groovy
+    `lib-conventions`
 }
 
 dependencies {
@@ -14,5 +14,7 @@ dependencies {
     api(libs.spring.web)
     api(libs.spring.webmvc)
 
+    testImplementation(libs.servlet)
     testImplementation(libs.spock.core)
+    testImplementation(libs.spring.test)
 }

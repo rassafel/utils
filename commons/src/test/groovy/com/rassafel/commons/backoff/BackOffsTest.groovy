@@ -97,8 +97,8 @@ class BackOffsTest extends Specification {
 
         then:
         actual == [
-            1L, 1L, 1L, 1L, 1L,
-            BackOff.STOP, BackOff.STOP, BackOff.STOP, BackOff.STOP, BackOff.STOP
+                1L, 1L, 1L, 1L, 1L,
+                BackOff.STOP, BackOff.STOP, BackOff.STOP, BackOff.STOP, BackOff.STOP
         ]
     }
 }

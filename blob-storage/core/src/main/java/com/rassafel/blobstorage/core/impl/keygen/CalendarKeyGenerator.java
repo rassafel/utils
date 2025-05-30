@@ -16,34 +16,39 @@
 
 package com.rassafel.blobstorage.core.impl.keygen;
 
-import com.rassafel.blobstorage.core.impl.KeyGenerator;
-import org.springframework.lang.Nullable;
-
 import java.time.Clock;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
 import java.time.format.SignStyle;
 
-import static java.time.temporal.ChronoField.*;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import org.springframework.lang.Nullable;
 
+import com.rassafel.blobstorage.core.impl.KeyGenerator;
+
+import static java.time.temporal.ChronoField.*;
 
 /**
  * The calendar based key generator. Ignores source name.
  */
+@RequiredArgsConstructor
 public class CalendarKeyGenerator implements KeyGenerator {
     /**
      * Date formatter that formats a date, such as '2024/04/29'.
      */
     protected static final DateTimeFormatter DEFAULT_FORMATTER = new DateTimeFormatterBuilder()
-        .appendValue(YEAR, 4, 10, SignStyle.EXCEEDS_PAD)
-        .appendLiteral(SEPARATOR)
-        .appendValue(MONTH_OF_YEAR, 2)
-        .appendLiteral(SEPARATOR)
-        .appendValue(DAY_OF_MONTH, 2)
-        .toFormatter();
+            .appendValue(YEAR, 4, 10, SignStyle.EXCEEDS_PAD)
+            .appendLiteral(SEPARATOR)
+            .appendValue(MONTH_OF_YEAR, 2)
+            .appendLiteral(SEPARATOR)
+            .appendValue(DAY_OF_MONTH, 2)
+            .toFormatter();
 
+    @NonNull
     private final Clock clock;
+    @NonNull
     private final DateTimeFormatter formatter;
 
     public CalendarKeyGenerator() {
@@ -52,11 +57,6 @@ public class CalendarKeyGenerator implements KeyGenerator {
 
     public CalendarKeyGenerator(Clock clock) {
         this(clock, DEFAULT_FORMATTER);
-    }
-
-    public CalendarKeyGenerator(Clock clock, DateTimeFormatter formatter) {
-        this.clock = clock;
-        this.formatter = formatter;
     }
 
     @Override

@@ -16,6 +16,8 @@
 
 package com.rassafel.blobstorage.event.impl
 
+import spock.lang.Specification
+
 import com.rassafel.blobstorage.core.BlobStorage
 import com.rassafel.blobstorage.event.BlobEvent
 import com.rassafel.blobstorage.event.support.StubGenericBlobListener
@@ -23,7 +25,6 @@ import com.rassafel.blobstorage.event.type.DefaultBlobEvent
 import com.rassafel.blobstorage.event.type.DeleteBlobEvent
 import com.rassafel.blobstorage.event.type.HardDeleteBlobEvent
 import com.rassafel.blobstorage.event.type.SoftDeleteBlobEvent
-import spock.lang.Specification
 
 class BlobEventPublisherImplTest extends Specification {
     def rootListener = new StubGenericBlobListener(BlobEvent)

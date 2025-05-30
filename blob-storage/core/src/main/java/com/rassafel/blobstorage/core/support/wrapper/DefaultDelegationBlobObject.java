@@ -16,10 +16,10 @@
 
 package com.rassafel.blobstorage.core.support.wrapper;
 
-import com.rassafel.blobstorage.core.BlobObject;
-
 import java.time.LocalDateTime;
 import java.util.Map;
+
+import com.rassafel.blobstorage.core.BlobObject;
 
 /**
  * Delegation BlobObject

@@ -16,14 +16,15 @@
 
 package com.rassafel.blobstorage.core;
 
+import java.io.InputStream;
+import java.util.Optional;
+
+import org.springframework.lang.Nullable;
+
 import com.rassafel.blobstorage.core.query.StoreBlobRequest;
 import com.rassafel.blobstorage.core.query.StoreBlobResponse;
 import com.rassafel.blobstorage.core.query.UpdateAttributesRequest;
 import com.rassafel.blobstorage.core.query.UpdateAttributesResponse;
-import org.springframework.lang.Nullable;
-
-import java.io.InputStream;
-import java.util.Optional;
 
 /**
  * The blob storage abstraction (store, find, update, delete)
@@ -80,8 +81,7 @@ public interface BlobStorage {
      * Update blob object attributes by reference
      *
      * @param ref     blob reference
-     * @param request update attributes info.
-     *                Remove attribute from blob if accepted value is null or blank
+     * @param request update attributes info. Remove attribute from blob if accepted value is null or blank
      * @return response with stored blob object
      * @throws NotFoundBlobException if blob not exists
      */

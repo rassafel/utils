@@ -16,18 +16,18 @@
 
 package com.rassafel.bus.impl;
 
-import com.rassafel.bus.*;
-import org.apache.commons.lang3.ClassUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ClassUtils;
+
+import com.rassafel.bus.*;
+
+@Slf4j
 public class DefaultHandlerRegistry implements HandlerRegistry {
-    protected final Logger log = LoggerFactory.getLogger(getClass());
     private final Map<Class<? extends Command>, CommandHandler> commandHandlers;
     private final Map<Class<? extends Command>, CommandHandler> cacheCommandHandlers = new ConcurrentHashMap<>();
     private final Map<Class<? extends Query>, QueryHandler> queryHandlers;
@@ -37,26 +37,25 @@ public class DefaultHandlerRegistry implements HandlerRegistry {
         this(new HashMap<>(), new HashMap<>());
     }
 
-    public DefaultHandlerRegistry(Map<Class<? extends Command>, CommandHandler> commandHandlers,
-                                  Map<Class<? extends Query>, QueryHandler> queryHandlers) {
+    public DefaultHandlerRegistry(
+            Map<Class<? extends Command>, CommandHandler> commandHandlers,
+            Map<Class<? extends Query>, QueryHandler> queryHandlers) {
         this.commandHandlers = commandHandlers;
         this.queryHandlers = queryHandlers;
     }
 
-    public <R, C extends Command<R>> void registerCommand(Class<? extends C> type,
-                                                          CommandHandler<R, C> handler) {
+    public <R, C extends Command<R>> void registerCommand(Class<? extends C> type, CommandHandler<R, C> handler) {
         commandHandlers.compute(type, (commandType, oldHandler) -> {
             if (oldHandler != null)
                 log.debug("Replace type command handler, type: {}; old handler: {}; new handler: {}",
-                    type.getName(), oldHandler.getClass().getName(), handler.getClass().getName());
+                        type.getName(), oldHandler.getClass().getName(), handler.getClass().getName());
             return handler;
         });
     }
 
     @Override
     public <R, C extends Command<R>> CommandHandler<R, C> getCommandHandler(Class<C> commandType) {
-        var handler = cacheCommandHandlers.computeIfAbsent(commandType, type ->
-            commandHandlers.entrySet().stream()
+        var handler = cacheCommandHandlers.computeIfAbsent(commandType, type -> commandHandlers.entrySet().stream()
                 .filter(e -> e.getKey().isAssignableFrom(type))
                 .min(Comparator.comparingInt(e -> inheritanceDeep(e.getKey(), type)))
                 .map(Map.Entry::getValue)
@@ -65,13 +64,13 @@ public class DefaultHandlerRegistry implements HandlerRegistry {
                     return new CommandNotFoundException();
                 }));
         log.debug("Found handler for command, handler: '{}'; command: '{}'",
-            handler.getClass().getName(), commandType.getName());
+                handler.getClass().getName(), commandType.getName());
         return handler;
     }
 
     private int inheritanceDeep(Class<?> superClass, Class<?> type) {
         var classes = ClassUtils.getAllInterfaces(type);
-        for (int i = 0; i < classes.size(); i++) {
+        for (var i = 0; i < classes.size(); i++) {
             var clazz = classes.get(i);
             if (clazz == superClass) {
                 return i;
@@ -80,20 +79,18 @@ public class DefaultHandlerRegistry implements HandlerRegistry {
         throw new RuntimeException();
     }
 
-    public <R, Q extends Query<R>> void registerQuery(Class<? extends Q> type,
-                                                      QueryHandler<R, Q> handler) {
+    public <R, Q extends Query<R>> void registerQuery(Class<? extends Q> type, QueryHandler<R, Q> handler) {
         queryHandlers.compute(type, (commandType, oldHandler) -> {
             if (oldHandler != null)
                 log.debug("Replace type query handler, type: {}; old handler: {}; new handler: {}",
-                    type.getName(), oldHandler.getClass().getName(), handler.getClass().getName());
+                        type.getName(), oldHandler.getClass().getName(), handler.getClass().getName());
             return handler;
         });
     }
 
     @Override
     public <R, Q extends Query<R>> QueryHandler<R, Q> getQueryHandler(Class<Q> queryType) {
-        var handler = cacheQueryHandlers.computeIfAbsent(queryType, type ->
-            queryHandlers.entrySet().stream()
+        var handler = cacheQueryHandlers.computeIfAbsent(queryType, type -> queryHandlers.entrySet().stream()
                 .filter(e -> e.getKey().isAssignableFrom(type))
                 .min(Comparator.comparingInt(e -> inheritanceDeep(e.getKey(), type)))
                 .map(Map.Entry::getValue)
@@ -102,7 +99,7 @@ public class DefaultHandlerRegistry implements HandlerRegistry {
                     return new QueryNotFoundException();
                 }));
         log.debug("Found handler for query, handler: '{}'; query: '{}'",
-            handler.getClass().getName(), queryType.getName());
+                handler.getClass().getName(), queryType.getName());
         return handler;
     }
 }

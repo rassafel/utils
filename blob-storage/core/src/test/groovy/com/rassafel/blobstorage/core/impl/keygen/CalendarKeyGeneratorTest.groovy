@@ -16,10 +16,10 @@
 
 package com.rassafel.blobstorage.core.impl.keygen
 
+import java.time.*
+
 import spock.lang.Shared
 import spock.lang.Specification
-
-import java.time.*
 
 class CalendarKeyGeneratorTest extends Specification {
     @Shared

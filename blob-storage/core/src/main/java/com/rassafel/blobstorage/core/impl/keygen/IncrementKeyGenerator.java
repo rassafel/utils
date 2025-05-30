@@ -16,15 +16,18 @@
 
 package com.rassafel.blobstorage.core.impl.keygen;
 
-import com.rassafel.blobstorage.core.impl.KeyGenerator;
+import java.util.concurrent.atomic.AtomicLong;
+
 import org.springframework.lang.Nullable;
+
+import com.rassafel.blobstorage.core.impl.KeyGenerator;
 
 /**
  * The number sequence based key generator. Ignores source name.
  */
 public class IncrementKeyGenerator implements KeyGenerator {
     private final long increment;
-    private long key;
+    private final AtomicLong key = new AtomicLong();
 
     public IncrementKeyGenerator() {
         this(1);
@@ -35,14 +38,13 @@ public class IncrementKeyGenerator implements KeyGenerator {
     }
 
     public IncrementKeyGenerator(long key, long increment) {
-        this.key = key;
+        this.key.set(key);
         this.increment = increment;
     }
 
     @Override
     public String createKey(@Nullable String name) {
-        var value = String.valueOf(key);
-        key += increment;
-        return value;
+        var value = key.getAndAdd(increment);
+        return String.valueOf(value);
     }
 }

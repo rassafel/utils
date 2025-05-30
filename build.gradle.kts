@@ -13,6 +13,13 @@ plugins {
 //    org.barfuin.gradle.jacocolog
 }
 
+val isCi = System.getenv("CI")?.isNotBlank() ?: false
+
+idea.module {
+    isDownloadSources = !isCi
+    isDownloadJavadoc = !isCi
+}
+
 idea.project {
     settings {
         copyright {

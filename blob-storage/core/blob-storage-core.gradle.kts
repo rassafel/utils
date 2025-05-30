@@ -1,6 +1,6 @@
 plugins {
-    `lib-conventions`
     groovy
+    `lib-conventions`
 }
 
 dependencies {

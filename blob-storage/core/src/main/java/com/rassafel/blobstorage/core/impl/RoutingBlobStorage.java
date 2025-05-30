@@ -16,25 +16,31 @@
 
 package com.rassafel.blobstorage.core.impl;
 
+import java.io.InputStream;
+import java.util.Optional;
+
+import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.lang.Nullable;
+import org.springframework.util.Assert;
+
 import com.rassafel.blobstorage.core.BlobStorage;
 import com.rassafel.blobstorage.core.BlobStorageLocator;
+import com.rassafel.blobstorage.core.StoreBlobException;
 import com.rassafel.blobstorage.core.StoredBlobObject;
 import com.rassafel.blobstorage.core.query.StoreBlobRequest;
 import com.rassafel.blobstorage.core.query.StoreBlobResponse;
 import com.rassafel.blobstorage.core.query.UpdateAttributesRequest;
 import com.rassafel.blobstorage.core.query.UpdateAttributesResponse;
-import org.springframework.lang.Nullable;
-import org.springframework.util.Assert;
-
-import java.io.InputStream;
-import java.util.Optional;
 
 /**
  * Routing BlobStorage use BlobStorageLocator.
  */
+@Slf4j
 public class RoutingBlobStorage implements BlobStorage {
     protected static final String DEFAULT_DELIMITER = ":/";
     private final String idDelimiter;
+    @NonNull
     private final BlobStorageLocator locator;
 
     public RoutingBlobStorage(BlobStorageLocator locator) {
@@ -42,7 +48,6 @@ public class RoutingBlobStorage implements BlobStorage {
     }
 
     public RoutingBlobStorage(BlobStorageLocator locator, String idDelimiter) {
-        Assert.notNull(locator, "locator cannot be null");
         Assert.hasText(idDelimiter, "idDelimiter cannot be empty");
         this.locator = locator;
         this.idDelimiter = idDelimiter;
@@ -54,8 +59,16 @@ public class RoutingBlobStorage implements BlobStorage {
         return store(storage, inputStream, request);
     }
 
+    /**
+     * Store blob to specific storage.
+     *
+     * @param storageName storage name
+     * @param inputStream input stream
+     * @param request     store blob request
+     * @return store blob response
+     */
     public StoreBlobResponse store(@Nullable String storageName, InputStream inputStream, StoreBlobRequest request) {
-        var storage = findStorageByName(storageName);
+        var storage = getStorageByName(storageName);
         return store(storage, inputStream, request);
     }
 
@@ -65,32 +78,32 @@ public class RoutingBlobStorage implements BlobStorage {
 
     @Override
     public boolean existsByRef(String ref) {
-        var storage = findStorageByRef(ref);
+        var storage = getStorageByRef(ref);
         return storage.existsByRef(ref);
     }
 
     @Nullable
     @Override
     public StoredBlobObject getByRef(String ref) {
-        var storage = findStorageByRef(ref);
+        var storage = getStorageByRef(ref);
         return storage.getByRef(ref);
     }
 
     @Override
     public Optional<StoredBlobObject> findByRef(String ref) {
-        var storage = findStorageByRef(ref);
+        var storage = getStorageByRef(ref);
         return storage.findByRef(ref);
     }
 
     @Override
     public boolean deleteByRef(String ref) {
-        var storage = findStorageByRef(ref);
+        var storage = getStorageByRef(ref);
         return storage.deleteByRef(ref);
     }
 
     @Override
     public UpdateAttributesResponse updateByRef(String ref, UpdateAttributesRequest request) {
-        var storage = findStorageByRef(ref);
+        var storage = getStorageByRef(ref);
         return storage.updateByRef(ref, request);
     }
 
@@ -98,9 +111,9 @@ public class RoutingBlobStorage implements BlobStorage {
         return locator.getDefaultStorage();
     }
 
-    protected BlobStorage findStorageByRef(String ref) {
+    protected BlobStorage getStorageByRef(String ref) {
         var storageName = extractName(ref);
-        return findStorageByName(storageName);
+        return getStorageByName(storageName);
     }
 
     @Nullable
@@ -110,6 +123,16 @@ public class RoutingBlobStorage implements BlobStorage {
         return ref.substring(0, i);
     }
 
+    protected BlobStorage getStorageByName(@Nullable String storageName) {
+        var storage = findStorageByName(storageName);
+        if (storage == null) {
+            log.warn("Storage not found: {}", storageName);
+            throw new StoreBlobException("Storage not found: " + storageName);
+        }
+        return storage;
+    }
+
+    @Nullable
     protected BlobStorage findStorageByName(@Nullable String storageName) {
         return locator.findStorage(storageName);
     }

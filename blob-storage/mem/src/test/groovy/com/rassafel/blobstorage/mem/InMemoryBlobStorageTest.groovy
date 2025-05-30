@@ -16,10 +16,11 @@
 
 package com.rassafel.blobstorage.mem
 
-import com.rassafel.blobstorage.BlobStorageSpecification
-import com.rassafel.blobstorage.core.BlobStorage
 import spock.lang.Shared
 import spock.lang.Stepwise
+
+import com.rassafel.blobstorage.BlobStorageSpecification
+import com.rassafel.blobstorage.core.BlobStorage
 
 @Stepwise
 class InMemoryBlobStorageTest extends BlobStorageSpecification {

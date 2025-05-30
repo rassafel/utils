@@ -16,8 +16,14 @@
 
 package com.rassafel.blobstorage.event.wrapper
 
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.LocalTime
+import java.time.ZoneOffset
 
-import com.rassafel.blobstorage.test.TestStoredBlobObject
+import spock.lang.Specification
+import spock.util.time.MutableClock
+
 import com.rassafel.blobstorage.core.BlobStorage
 import com.rassafel.blobstorage.core.NotFoundBlobException
 import com.rassafel.blobstorage.core.query.impl.DefaultStoreBlobRequest
@@ -27,13 +33,7 @@ import com.rassafel.blobstorage.core.query.impl.DefaultUpdateAttributesResponse
 import com.rassafel.blobstorage.event.BlobEventPublisher
 import com.rassafel.blobstorage.event.type.RestoreSoftDeletedBlobEvent
 import com.rassafel.blobstorage.event.type.SoftDeleteBlobEvent
-import spock.lang.Specification
-import spock.util.time.MutableClock
-
-import java.time.LocalDate
-import java.time.LocalDateTime
-import java.time.LocalTime
-import java.time.ZoneOffset
+import com.rassafel.blobstorage.test.TestStoredBlobObject
 
 import static com.rassafel.blobstorage.BlobStorageTestUtils.toInputStream
 
@@ -45,15 +45,15 @@ class SoftDeleteBlobStorageWrapperTest extends Specification {
     def ref = "/${staticKey}.txt"
 
     TestStoredBlobObject.Builder blobBuilder = TestStoredBlobObject.builder()
-        .originalName("test.txt")
-        .attribute("X-Meta", "Value1")
-        .contentType("text/plain")
-        .storedRef(ref)
-        .uploadedAt(now)
-        .lastModifiedAt(now)
+            .originalName("test.txt")
+            .attribute("X-Meta", "Value1")
+            .contentType("text/plain")
+            .storedRef(ref)
+            .uploadedAt(now)
+            .lastModifiedAt(now)
 
     TestStoredBlobObject.Builder deletedBlobBuilder = TestStoredBlobObject.builder(blobBuilder.build())
-        .attribute(SoftDeleteBlobStorageWrapper.DEFAULT_DELETED_ATTRIBUTE, now.toString())
+            .attribute(SoftDeleteBlobStorageWrapper.DEFAULT_DELETED_ATTRIBUTE, now.toString())
 
     BlobStorage delegate = Mock()
     BlobEventPublisher publisher = Mock()
@@ -62,10 +62,10 @@ class SoftDeleteBlobStorageWrapperTest extends Specification {
     def "store"() {
         given:
         def request = DefaultStoreBlobRequest.builder()
-            .originalName("test.txt")
-            .attribute("X-Meta", "Value1")
-            .contentType("text/plain")
-            .build()
+                .originalName("test.txt")
+                .attribute("X-Meta", "Value1")
+                .contentType("text/plain")
+                .build()
         def expResponse = new DefaultStoreBlobResponse(blobBuilder.build())
 
         when:
@@ -356,7 +356,7 @@ class SoftDeleteBlobStorageWrapperTest extends Specification {
     def "update"() {
         given:
         def request = DefaultUpdateAttributesRequest.builder()
-            .build()
+                .build()
         def blob = blobBuilder.build()
         def expResponse = new DefaultUpdateAttributesResponse(blob)
 
@@ -373,7 +373,7 @@ class SoftDeleteBlobStorageWrapperTest extends Specification {
     def "update if soft deleted"() {
         given:
         def request = DefaultUpdateAttributesRequest.builder()
-            .build()
+                .build()
 
         when:
         def response = storage.updateByRef(ref, request)
@@ -387,7 +387,7 @@ class SoftDeleteBlobStorageWrapperTest extends Specification {
     def "update if not found"() {
         given:
         def request = DefaultUpdateAttributesRequest.builder()
-            .build()
+                .build()
 
         when:
         def response = storage.updateByRef(ref, request)
@@ -401,7 +401,7 @@ class SoftDeleteBlobStorageWrapperTest extends Specification {
     def "update ignore deleted"() {
         given:
         def request = DefaultUpdateAttributesRequest.builder()
-            .build()
+                .build()
 
         when:
         def response = storage.updateByRefIgnoreDeleted(ref, request)
@@ -414,7 +414,7 @@ class SoftDeleteBlobStorageWrapperTest extends Specification {
     def "update ignore deleted if soft deleted"() {
         given:
         def request = DefaultUpdateAttributesRequest.builder()
-            .build()
+                .build()
 
         when:
         def response = storage.updateByRefIgnoreDeleted(ref, request)
@@ -427,7 +427,7 @@ class SoftDeleteBlobStorageWrapperTest extends Specification {
     def "update ignore deleted if not found"() {
         given:
         def request = DefaultUpdateAttributesRequest.builder()
-            .build()
+                .build()
 
         when:
         def response = storage.updateByRefIgnoreDeleted(ref, request)

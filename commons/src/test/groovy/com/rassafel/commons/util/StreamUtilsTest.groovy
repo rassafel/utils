@@ -16,10 +16,9 @@
 
 package com.rassafel.commons.util
 
+import java.util.function.Function
 
 import spock.lang.Specification
-
-import java.util.function.Function
 
 class StreamUtilsTest extends Specification {
     def "emptyIfNull with null array"() {
@@ -81,15 +80,15 @@ class StreamUtilsTest extends Specification {
     def "distinctByKey"() {
         given:
         def input = List.of(
-            new IntegerWrapper(1),
-            new IntegerWrapper(1),
-            new IntegerWrapper(2),
-            new IntegerWrapper(3)
+                new IntegerWrapper(1),
+                new IntegerWrapper(1),
+                new IntegerWrapper(2),
+                new IntegerWrapper(3)
         )
 
         when:
         def actual = input.stream()
-            .filter(StreamUtils.distinctByKey(w -> w.value))
+                .filter(StreamUtils.distinctByKey(w -> w.value))
 
         then:
         def list = actual.toList()
@@ -107,7 +106,7 @@ class StreamUtilsTest extends Specification {
 
         when:
         def actual = input.stream()
-            .filter(StreamUtils.distinctByKey(w -> w.value))
+                .filter(StreamUtils.distinctByKey(w -> w.value))
 
         then:
         def list = actual.toList()
@@ -125,7 +124,7 @@ class StreamUtilsTest extends Specification {
 
         when:
         def actual = input.stream()
-            .filter(StreamUtils.distinctByKey(w -> w.value, false))
+                .filter(StreamUtils.distinctByKey(w -> w.value, false))
 
         then:
         def list = actual.toList()
@@ -155,6 +154,39 @@ class StreamUtilsTest extends Specification {
 
         then:
         actual == ""
+    }
+
+    def "exactlyOne empty list throws exception"() {
+        given:
+        def input = []
+
+        when:
+        def actual = input.stream().collect(StreamUtils.exactlyOne())
+
+        then:
+        thrown IllegalArgumentException
+    }
+
+    def "exactlyOne exactly one element"() {
+        given:
+        def input = [1]
+
+        when:
+        def actual = input.stream().collect(StreamUtils.exactlyOne())
+
+        then:
+        actual == 1
+    }
+
+    def "exactlyOne more than one element throws exception"() {
+        given:
+        def input = [1, 2]
+
+        when:
+        def actual = input.stream().collect(StreamUtils.exactlyOne())
+
+        then:
+        thrown IllegalArgumentException
     }
 
     private static class IntegerWrapper {

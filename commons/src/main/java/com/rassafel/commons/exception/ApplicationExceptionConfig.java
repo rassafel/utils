@@ -16,17 +16,22 @@
 
 package com.rassafel.commons.exception;
 
-import com.rassafel.commons.spel.SpelResolver;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.ParameterNameDiscoverer;
 import org.springframework.core.StandardReflectionParameterNameDiscoverer;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 
+import com.rassafel.commons.spel.SpelResolver;
+
+/**
+ * Configuration class for application exceptions.
+ */
 @Configuration
 public class ApplicationExceptionConfig {
     @Bean
-    public SpelResolver spelResolver(SpelExpressionParser spelExpressionParser, ParameterNameDiscoverer parameterNameDiscoverer) {
+    public SpelResolver spelResolver(
+            SpelExpressionParser spelExpressionParser, ParameterNameDiscoverer parameterNameDiscoverer) {
         return new SpelResolver(spelExpressionParser, parameterNameDiscoverer);
     }
 

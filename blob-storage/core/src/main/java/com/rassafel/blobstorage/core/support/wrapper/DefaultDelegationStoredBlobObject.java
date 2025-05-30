@@ -16,11 +16,12 @@
 
 package com.rassafel.blobstorage.core.support.wrapper;
 
-import com.rassafel.blobstorage.core.StoredBlobObject;
-import org.springframework.lang.Nullable;
-
 import java.io.IOException;
 import java.io.InputStream;
+
+import org.springframework.lang.Nullable;
+
+import com.rassafel.blobstorage.core.StoredBlobObject;
 
 /**
  * Delegation StoredBlobObject.

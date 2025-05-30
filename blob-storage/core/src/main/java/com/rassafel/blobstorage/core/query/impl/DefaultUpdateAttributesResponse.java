@@ -16,11 +16,12 @@
 
 package com.rassafel.blobstorage.core.query.impl;
 
-import com.rassafel.blobstorage.core.StoredBlobObject;
-import com.rassafel.blobstorage.core.query.UpdateAttributesResponse;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+
+import com.rassafel.blobstorage.core.StoredBlobObject;
+import com.rassafel.blobstorage.core.query.UpdateAttributesResponse;
 
 @RequiredArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter

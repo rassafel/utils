@@ -16,6 +16,12 @@
 
 package com.rassafel.blobstorage.event.wrapper;
 
+import java.io.InputStream;
+import java.time.Clock;
+
+import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
+
 import com.rassafel.blobstorage.core.BlobStorage;
 import com.rassafel.blobstorage.core.query.StoreBlobRequest;
 import com.rassafel.blobstorage.core.query.StoreBlobResponse;
@@ -26,29 +32,26 @@ import com.rassafel.blobstorage.event.BlobEventPublisher;
 import com.rassafel.blobstorage.event.type.HardDeleteBlobEvent;
 import com.rassafel.blobstorage.event.type.UpdateAttributesBlobEvent;
 import com.rassafel.blobstorage.event.type.UploadBlobEvent;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.util.Assert;
-
-import java.io.InputStream;
-import java.time.Clock;
 
 /**
  * Blob event publishing storage wrapper.
  * <p>
  * Events:
+ * <ul>
  * <li>{@link UploadBlobEvent}</li>
  * <li>{@link UpdateAttributesBlobEvent}</li>
  * <li>{@link HardDeleteBlobEvent}</li>
+ * </ul>
  */
 @Slf4j
 public class EventPublisherBlobStorageWrapper extends DefaultDelegatedBlobStorage {
+    @NonNull
     private final Clock clock;
+    @NonNull
     private final BlobEventPublisher publisher;
 
     public EventPublisherBlobStorageWrapper(BlobStorage delegate, Clock clock, BlobEventPublisher publisher) {
         super(delegate);
-        Assert.notNull(clock, "clock cannot be null");
-        Assert.notNull(publisher, "publisher cannot be null");
         this.clock = clock;
         this.publisher = publisher;
     }

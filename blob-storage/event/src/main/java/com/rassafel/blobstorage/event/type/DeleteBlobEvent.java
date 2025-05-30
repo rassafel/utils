@@ -16,17 +16,21 @@
 
 package com.rassafel.blobstorage.event.type;
 
-import com.rassafel.blobstorage.core.BlobStorage;
-import lombok.Getter;
-
 import java.time.Clock;
 import java.time.LocalDateTime;
+
+import lombok.Getter;
+
+import com.rassafel.blobstorage.core.BlobStorage;
 
 /**
  * Delete blob event
  */
 @Getter
 public class DeleteBlobEvent extends DefaultBlobEvent {
+    /**
+     * Reference to the deleted blob
+     */
     private final String ref;
 
     public DeleteBlobEvent(BlobStorage storage, String ref) {

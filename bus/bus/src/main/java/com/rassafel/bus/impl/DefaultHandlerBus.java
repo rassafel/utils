@@ -16,25 +16,20 @@
 
 package com.rassafel.bus.impl;
 
+import lombok.RequiredArgsConstructor;
+
 import com.rassafel.bus.*;
 
+@RequiredArgsConstructor
 public class DefaultHandlerBus implements HandlerBus {
     private final HandlerRegistry registry;
     private final PreHandleCommand commandPreHandler;
     private final PreHandleQuery queryPreHandler;
 
     public DefaultHandlerBus(HandlerRegistry registry) {
-        this(registry,
-            (handler, query) -> {
-            },
-            (handler, command) -> {
-            });
-    }
-
-    public DefaultHandlerBus(HandlerRegistry registry, PreHandleCommand commandPreHandler, PreHandleQuery queryPreHandler) {
-        this.registry = registry;
-        this.commandPreHandler = commandPreHandler;
-        this.queryPreHandler = queryPreHandler;
+        this(registry, (handler, query) -> {
+        }, (handler, command) -> {
+        });
     }
 
     @Override

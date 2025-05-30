@@ -16,10 +16,10 @@
 
 package com.rassafel.blobstorage.event.type;
 
-import com.rassafel.blobstorage.core.BlobStorage;
-
 import java.time.Clock;
 import java.time.LocalDateTime;
+
+import com.rassafel.blobstorage.core.BlobStorage;
 
 /**
  * Hard delete blob event

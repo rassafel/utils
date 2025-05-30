@@ -19,12 +19,38 @@ package com.rassafel.blobstorage.aws.support;
 import lombok.Data;
 import org.springframework.util.unit.DataSize;
 
+/**
+ * Properties for configuring an S3 blob storage service.
+ */
 @Data
 public class S3BlobStorageProperties {
+    /**
+     * The name of the S3 bucket where the blobs will be stored.
+     */
     private String bucket;
+
+    /**
+     * The AWS credentials used to authenticate with the S3 service.
+     */
     private String accessKey;
+
+    /**
+     * The AWS credentials used to authenticate with the S3 service.
+     */
     private String secretAccessKey;
+
+    /**
+     * The region where the S3 bucket is located.
+     */
     private String region;
+
+    /**
+     * The URL of the S3 endpoint to use. If not specified, AWS SDK will use the default endpoint for the region.
+     */
     private String endpointUrl;
+
+    /**
+     * The maximum size of a single upload in bytes.
+     */
     private DataSize chunkSize = DataSize.ofKilobytes(8);
 }

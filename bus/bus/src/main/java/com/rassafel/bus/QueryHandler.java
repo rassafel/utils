@@ -16,6 +16,12 @@
 
 package com.rassafel.bus;
 
+/**
+ * Interface that defines a handler for queries.
+ *
+ * @param <R> the type of result.
+ * @param <Q> the type of query.
+ */
 public interface QueryHandler<R, Q extends Query<R>> {
     R handle(Q query);
 }

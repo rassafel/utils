@@ -16,19 +16,20 @@
 
 package com.rassafel.blobstorage.core.query.impl;
 
-import com.rassafel.blobstorage.core.query.UpdateAttributesRequest;
+import java.util.LinkedHashMap;
+import java.util.Map;
+
 import lombok.Getter;
 import org.springframework.lang.Nullable;
 import org.springframework.util.LinkedCaseInsensitiveMap;
 
-import java.util.Map;
+import com.rassafel.blobstorage.core.query.UpdateAttributesRequest;
 
 @Getter
 public class DefaultUpdateAttributesRequest implements UpdateAttributesRequest {
-    private final Map<String, String> attributes;
+    private final Map<String, String> attributes = new LinkedCaseInsensitiveMap<>(1);
 
     protected DefaultUpdateAttributesRequest(AbstractBuilder<?, ?> builder) {
-        this.attributes = new LinkedCaseInsensitiveMap<>(builder.attributes.size());
         this.attributes.putAll(builder.attributes);
     }
 
@@ -41,11 +42,14 @@ public class DefaultUpdateAttributesRequest implements UpdateAttributesRequest {
         return new BuilderImpl(this);
     }
 
-    public interface Builder<O extends DefaultUpdateAttributesRequest, B extends Builder<O, B>> extends UpdateAttributesRequest.Builder<O, B> {
+    public interface Builder<O extends DefaultUpdateAttributesRequest, B extends Builder<O, B>>
+            extends UpdateAttributesRequest.Builder<O, B> {
     }
 
-    protected abstract static class AbstractBuilder<O extends DefaultUpdateAttributesRequest, B extends AbstractBuilder<O, B>> implements Builder<O, B> {
-        protected Map<String, String> attributes = new LinkedCaseInsensitiveMap<>();
+    protected abstract static class AbstractBuilder<
+            O extends DefaultUpdateAttributesRequest, B extends AbstractBuilder<O, B>>
+            implements Builder<O, B> {
+        protected final Map<String, String> attributes = new LinkedHashMap<>(1);
 
         protected AbstractBuilder(DefaultUpdateAttributesRequest request) {
             request.getAttributes().forEach(this::attribute);

@@ -16,24 +16,28 @@
 
 package com.rassafel.blobstorage.event.impl;
 
+import java.util.Collection;
+import java.util.LinkedHashSet;
+
+import lombok.NonNull;
+
 import com.rassafel.blobstorage.event.BlobEvent;
 import com.rassafel.blobstorage.event.BlobEventPublisher;
 import com.rassafel.blobstorage.event.BlobListener;
 import com.rassafel.blobstorage.event.support.GenericBlobListener;
 import com.rassafel.blobstorage.event.support.GenericBlobListenerAdapter;
-import org.springframework.util.Assert;
 
-import java.util.Collection;
-import java.util.LinkedHashSet;
-
+/**
+ * Implementation of {@link BlobEventPublisher}.
+ */
 public class BlobEventPublisherImpl implements BlobEventPublisher {
     private final Collection<GenericBlobListener> listeners = new LinkedHashSet<>();
 
     @Override
-    public void addBlobListener(BlobListener<?> listener) {
-        Assert.notNull(listener, "listener cannot be null");
-        var genericListener = listener instanceof GenericBlobListener ?
-            (GenericBlobListener) listener : new GenericBlobListenerAdapter(listener);
+    public void addBlobListener(@NonNull BlobListener<?> listener) {
+        var genericListener = listener instanceof GenericBlobListener
+                ? (GenericBlobListener) listener
+                : new GenericBlobListenerAdapter(listener);
         listeners.add(genericListener);
     }
 

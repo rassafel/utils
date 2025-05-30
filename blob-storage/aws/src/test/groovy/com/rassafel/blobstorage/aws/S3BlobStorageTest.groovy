@@ -16,13 +16,14 @@
 
 package com.rassafel.blobstorage.aws
 
-import com.rassafel.blobstorage.BlobStorageSpecification
-import com.rassafel.blobstorage.aws.support.DefaultS3ClientProvider
-import com.rassafel.blobstorage.core.BlobStorage
 import org.springframework.util.unit.DataSize
 import spock.lang.IgnoreIf
 import spock.lang.Shared
 import spock.lang.Stepwise
+
+import com.rassafel.blobstorage.BlobStorageSpecification
+import com.rassafel.blobstorage.aws.support.DefaultS3ClientProvider
+import com.rassafel.blobstorage.core.BlobStorage
 
 @Stepwise
 @IgnoreIf(value = {
@@ -38,15 +39,15 @@ class S3BlobStorageTest extends BlobStorageSpecification {
 
     @Shared
     def clientProvider = new DefaultS3ClientProvider(
-        System.getenv("S3_ACCESS_KEY"),
-        System.getenv("S3_SECRET_ACCESS_KEY"),
-        System.getenv("S3_REGION"),
-        System.getenv("S3_URL"),
+            System.getenv("S3_ACCESS_KEY"),
+            System.getenv("S3_SECRET_ACCESS_KEY"),
+            System.getenv("S3_REGION"),
+            System.getenv("S3_URL"),
     )
 
     @Shared
     def storage = new S3BlobStorage(DataSize.ofMegabytes(8), "s3-test",
-        clientProvider, clock, keyGen)
+            clientProvider, clock, keyGen)
 
     @Override
     BlobStorage storage() {

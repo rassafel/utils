@@ -21,25 +21,55 @@ import java.net.URLEncoder;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 
-public abstract class UrlEncodeUtils {
+import lombok.NonNull;
+import lombok.experimental.UtilityClass;
+
+/**
+ * Utility class for encoding and decoding URLs.
+ */
+@UtilityClass
+public class UrlEncodeUtils {
     private static final Charset DEFAULT_CHARSET = StandardCharsets.UTF_8;
 
-    private UrlEncodeUtils() {
-    }
-
+    /**
+     * Encode a string to URL format using the default UTF-8 charset.
+     *
+     * @param url the string to encode
+     * @return the encoded string
+     */
     public static String encode(String url) {
         return encode(url, DEFAULT_CHARSET);
     }
 
-    public static String encode(String url, Charset charset) {
+    /**
+     * Encode a string to URL format using the specified charset.
+     *
+     * @param url     the string to encode
+     * @param charset the charset to use for encoding
+     * @return the encoded string
+     */
+    public static String encode(@NonNull String url, @NonNull Charset charset) {
         return URLEncoder.encode(url, charset);
     }
 
+    /**
+     * Decode a string from URL format using the default UTF-8 charset.
+     *
+     * @param url the string to decode
+     * @return the decoded string
+     */
     public static String decode(String url) {
         return decode(url, DEFAULT_CHARSET);
     }
 
-    public static String decode(String url, Charset charset) {
+    /**
+     * Decode a string from URL format using the specified charset.
+     *
+     * @param url     the string to decode
+     * @param charset the charset to use for decoding
+     * @return the decoded string
+     */
+    public static String decode(@NonNull String url, @NonNull Charset charset) {
         return URLDecoder.decode(url, charset);
     }
 }

@@ -24,5 +24,11 @@ import com.rassafel.blobstorage.event.BlobListener;
  * Accepts all events filtered with {@link #supportsEventType(Class)}
  */
 public interface GenericBlobListener extends BlobListener<BlobEvent> {
+    /**
+     * Checks if the event type is supported by this listener.
+     *
+     * @param clazz the class of the event type to check.
+     * @return true if the event type is supported, false otherwise.
+     */
     boolean supportsEventType(Class<? extends BlobEvent> clazz);
 }

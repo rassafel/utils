@@ -16,6 +16,16 @@
 
 package com.rassafel.blobstorage.event.wrapper;
 
+import java.time.Clock;
+import java.time.LocalDateTime;
+import java.util.Optional;
+
+import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.lang.Nullable;
+import org.springframework.util.Assert;
+
 import com.rassafel.blobstorage.core.BlobStorage;
 import com.rassafel.blobstorage.core.NotFoundBlobException;
 import com.rassafel.blobstorage.core.StoredBlobObject;
@@ -26,26 +36,22 @@ import com.rassafel.blobstorage.core.support.wrapper.DefaultDelegatedBlobStorage
 import com.rassafel.blobstorage.event.BlobEventPublisher;
 import com.rassafel.blobstorage.event.type.RestoreSoftDeletedBlobEvent;
 import com.rassafel.blobstorage.event.type.SoftDeleteBlobEvent;
-import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.lang.Nullable;
-import org.springframework.util.Assert;
-
-import java.time.Clock;
-import java.time.LocalDateTime;
-import java.util.Optional;
 
 /**
  * Soft delete blob storage wrapper.
  * <p>
  * Events:
+ * <ul>
  * <li>{@link SoftDeleteBlobEvent}</li>
  * <li>{@link RestoreSoftDeletedBlobEvent}</li>
+ * </ul>
  */
 @Slf4j
 public class SoftDeleteBlobStorageWrapper extends DefaultDelegatedBlobStorage {
     public static final String DEFAULT_DELETED_ATTRIBUTE = "X-Deleted";
+    @NonNull
     private final Clock clock;
+    @NonNull
     private final BlobEventPublisher publisher;
     private final String deletedAttribute;
 
@@ -53,10 +59,9 @@ public class SoftDeleteBlobStorageWrapper extends DefaultDelegatedBlobStorage {
         this(delegate, clock, publisher, DEFAULT_DELETED_ATTRIBUTE);
     }
 
-    public SoftDeleteBlobStorageWrapper(BlobStorage delegate, Clock clock, BlobEventPublisher publisher, String deletedAttribute) {
+    public SoftDeleteBlobStorageWrapper(
+            BlobStorage delegate, Clock clock, BlobEventPublisher publisher, String deletedAttribute) {
         super(delegate);
-        Assert.notNull(clock, "clock cannot be null");
-        Assert.notNull(publisher, "publisher cannot be null");
         Assert.hasText(deletedAttribute, "deletedAttribute cannot be null");
         this.clock = clock;
         this.publisher = publisher;
@@ -68,6 +73,12 @@ public class SoftDeleteBlobStorageWrapper extends DefaultDelegatedBlobStorage {
         return findByRef(ref).isPresent();
     }
 
+    /**
+     * Check if the blob exists by reference, ignoring any soft deletions.
+     *
+     * @param ref The reference of the blob.
+     * @return true if the blob exists, false otherwise.
+     */
     public boolean existsByRefIgnoreDeleted(String ref) {
         return super.existsByRef(ref);
     }
@@ -84,6 +95,12 @@ public class SoftDeleteBlobStorageWrapper extends DefaultDelegatedBlobStorage {
         return blob;
     }
 
+    /**
+     * Get a blob by reference, ignoring any soft deletions.
+     *
+     * @param ref The reference of the blob.
+     * @return A StoredBlobObject instance representing the blob, or null if not found.
+     */
     @Nullable
     public StoredBlobObject getByRefIgnoreDeleted(String ref) {
         return super.getByRef(ref);
@@ -91,21 +108,32 @@ public class SoftDeleteBlobStorageWrapper extends DefaultDelegatedBlobStorage {
 
     @Override
     public Optional<StoredBlobObject> findByRef(String ref) {
-        return findByRefIgnoreDeleted(ref)
-            .filter(b -> {
-                if (isDeleted(b)) {
-                    log.trace("Blob soft deleted, skip, ref: {}", ref);
-                    return false;
-                }
-                return true;
-            });
+        return findByRefIgnoreDeleted(ref).filter(b -> {
+            if (isDeleted(b)) {
+                log.trace("Blob soft deleted, skip, ref: {}", ref);
+                return false;
+            }
+            return true;
+        });
     }
 
+    /**
+     * Find a blob by reference, ignoring any soft deletions.
+     *
+     * @param ref The reference of the blob.
+     * @return An optional containing the stored blob object if found, or an empty optional otherwise.
+     */
     public Optional<StoredBlobObject> findByRefIgnoreDeleted(String ref) {
         return super.findByRef(ref);
     }
 
-    protected boolean isDeleted(StoredBlobObject blob) {
+    /**
+     * Check if a blob is marked as deleted.
+     *
+     * @param blob The stored blob object.
+     * @return True if the blob is marked as deleted, false otherwise.
+     */
+    public boolean isDeleted(StoredBlobObject blob) {
         return StringUtils.isNotBlank(blob.getAttribute(deletedAttribute));
     }
 
@@ -114,8 +142,8 @@ public class SoftDeleteBlobStorageWrapper extends DefaultDelegatedBlobStorage {
         if (!existsByRef(ref)) return false;
         var timestamp = LocalDateTime.now(clock);
         var request = DefaultUpdateAttributesRequest.builder()
-            .attribute(deletedAttribute, timestamp.toString())
-            .build();
+                .attribute(deletedAttribute, timestamp.toString())
+                .build();
         log.trace("Add soft delete attribute to blob, ref: {}; '{}': '{}'", ref, deletedAttribute, timestamp);
         try {
             var response = updateByRefIgnoreDeleted(ref, request);
@@ -139,18 +167,18 @@ public class SoftDeleteBlobStorageWrapper extends DefaultDelegatedBlobStorage {
      */
     public boolean restoreDeletedByRef(String ref) {
         var blob = findByRefIgnoreDeleted(ref)
-            .orElseThrow(() -> new NotFoundBlobException(ref));
+                .orElseThrow(() -> new NotFoundBlobException(ref));
         if (!isDeleted(blob)) return false;
         var timestamp = blob.getAttribute(deletedAttribute);
         var request = DefaultUpdateAttributesRequest.builder()
-            .removeAttribute(deletedAttribute)
-            .build();
+                .removeAttribute(deletedAttribute)
+                .build();
         log.trace("Remove soft delete attribute to blob, ref: {}; '{}': '{}'", ref, deletedAttribute, timestamp);
         try {
             var response = updateByRefIgnoreDeleted(ref, request);
         } catch (NotFoundBlobException ex) {
             log.debug("Fail remove soft delete attribute from blob, ref: {}; '{}': '{}'", ref, deletedAttribute,
-                timestamp);
+                    timestamp);
             throw ex;
         }
         log.debug("Soft delete attribute removed to blob, ref: {}; '{}': '{}'", ref, deletedAttribute, timestamp);
@@ -159,6 +187,12 @@ public class SoftDeleteBlobStorageWrapper extends DefaultDelegatedBlobStorage {
         return true;
     }
 
+    /**
+     * Delete blob by reference. Blob will be permanently deleted.
+     *
+     * @param ref blob reference
+     * @return true if blob deleted successfully, false otherwise
+     */
     public boolean hardDeleteByRef(String ref) {
         return super.deleteByRef(ref);
     }
@@ -169,6 +203,13 @@ public class SoftDeleteBlobStorageWrapper extends DefaultDelegatedBlobStorage {
         return updateByRefIgnoreDeleted(ref, request);
     }
 
+    /**
+     * Update blob attributes by reference, ignoring soft delete.
+     *
+     * @param ref     blob reference
+     * @param request update attributes request
+     * @return update attributes response
+     */
     public UpdateAttributesResponse updateByRefIgnoreDeleted(String ref, UpdateAttributesRequest request) {
         return super.updateByRef(ref, request);
     }

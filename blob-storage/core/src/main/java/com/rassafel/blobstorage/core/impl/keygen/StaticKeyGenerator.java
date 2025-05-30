@@ -16,21 +16,22 @@
 
 package com.rassafel.blobstorage.core.impl.keygen;
 
-import com.rassafel.blobstorage.core.impl.KeyGenerator;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.springframework.lang.Nullable;
+
+import com.rassafel.blobstorage.core.impl.KeyGenerator;
 
 /**
  * The key generator return static name.
  */
+@RequiredArgsConstructor
 public class StaticKeyGenerator implements KeyGenerator {
+    @NonNull
     private final String key;
 
     public StaticKeyGenerator() {
         this("");
-    }
-
-    public StaticKeyGenerator(String key) {
-        this.key = key;
     }
 
     @Override

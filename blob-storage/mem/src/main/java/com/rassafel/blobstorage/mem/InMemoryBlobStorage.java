@@ -16,6 +16,21 @@
 
 package com.rassafel.blobstorage.mem;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.time.Clock;
+import java.time.LocalDateTime;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.lang.Nullable;
+
 import com.rassafel.blobstorage.core.BlobStorage;
 import com.rassafel.blobstorage.core.NotFoundBlobException;
 import com.rassafel.blobstorage.core.StoreBlobException;
@@ -27,32 +42,18 @@ import com.rassafel.blobstorage.core.query.UpdateAttributesResponse;
 import com.rassafel.blobstorage.core.query.impl.DefaultStoreBlobResponse;
 import com.rassafel.blobstorage.core.query.impl.DefaultUpdateAttributesResponse;
 import com.rassafel.blobstorage.core.util.FileTypeUtils;
-import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.lang.Nullable;
-import org.springframework.util.Assert;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.time.Clock;
-import java.time.LocalDateTime;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-
+/**
+ * In-memory implementation of BlobStorage. Stores blobs in a map with blob keys as the keys and InMemoryStoredBlobObject objects as the values.
+ */
+@Slf4j
+@RequiredArgsConstructor
 public class InMemoryBlobStorage implements BlobStorage {
-    protected static final Logger log = LoggerFactory.getLogger(InMemoryBlobStorage.class);
     private final Map<String, InMemoryStoredBlobObject> blobs = new ConcurrentHashMap<>();
+    @NonNull
     private final KeyGenerator keyGenerator;
+    @NonNull
     private final Clock clock;
-
-    public InMemoryBlobStorage(KeyGenerator keyGenerator, Clock clock) {
-        Assert.notNull(keyGenerator, "keyGenerator must not be null");
-        this.keyGenerator = keyGenerator;
-        this.clock = clock;
-    }
 
     @Override
     public StoreBlobResponse store(InputStream inputStream, StoreBlobRequest request) {
@@ -79,9 +80,9 @@ public class InMemoryBlobStorage implements BlobStorage {
     protected StoreBlobResponse store(String blobKey, InputStream inputStream, StoreBlobRequest request) {
         var now = LocalDateTime.now(clock);
         var builder = InMemoryStoredBlobObject.builder(request)
-            .uploadedAt(now)
-            .lastModifiedAt(now)
-            .storedRef(blobKey);
+                .uploadedAt(now)
+                .lastModifiedAt(now)
+                .storedRef(blobKey);
         try {
             byte[] bytes;
             var requestSize = request.getSize();
@@ -90,12 +91,11 @@ public class InMemoryBlobStorage implements BlobStorage {
             } else {
                 bytes = IOUtils.toByteArray(inputStream, Math.max(requestSize, 0));
             }
-            builder.size(bytes.length)
-                .bytes(bytes);
+            builder.size(bytes.length).bytes(bytes);
         } catch (IOException e) {
             var fileName = request.getOriginalName();
             log.error("Error saving blob to in memory storage, name: {}; blobKey: {}",
-                fileName, blobKey, e);
+                    fileName, blobKey, e);
             var message = String.format("Could not save blob %s.", fileName);
 //          ToDo: add custom exception
             throw new StoreBlobException(message, e);
@@ -141,7 +141,7 @@ public class InMemoryBlobStorage implements BlobStorage {
             }
             log.debug("Blob found, ref: {}; name: {}", ref, blob.getOriginalName());
             var builder = blob.toBuilder()
-                .lastModifiedAt(LocalDateTime.now(clock));
+                    .lastModifiedAt(LocalDateTime.now(clock));
             request.getAttributes().forEach(builder::attribute);
             return builder.build();
         });

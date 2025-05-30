@@ -16,12 +16,38 @@
 
 package com.rassafel.commons.backoff;
 
+import java.time.Duration;
 
+import org.springframework.lang.Nullable;
+
+/**
+ * Interface for back-off strategies.
+ */
 public interface BackOff {
     long STOP = -1;
 
+    /**
+     * Determines whether a delay indicates that back-off should be stopped.
+     *
+     * @param delay the delay value to check
+     * @return true if the delay indicates back-off should stop, false otherwise
+     */
     static boolean isStop(long delay) {
         return STOP == delay;
+    }
+
+    /**
+     * Converts a delay value to a {@link Duration}. If the input delay is equal to {@code STOP}, this method returns null.
+     *
+     * @param delay the delay value to convert
+     * @return a {@link Duration} instance, or null if the input delay is {@code STOP}
+     */
+    @Nullable
+    static Duration toDuration(long delay) {
+        if (isStop(delay)) {
+            return null;
+        }
+        return Duration.ofMillis(delay);
     }
 
     /**

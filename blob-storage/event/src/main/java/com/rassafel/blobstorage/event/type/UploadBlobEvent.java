@@ -16,17 +16,21 @@
 
 package com.rassafel.blobstorage.event.type;
 
-import com.rassafel.blobstorage.core.BlobStorage;
-import lombok.Getter;
-
 import java.time.Clock;
 import java.time.LocalDateTime;
+
+import lombok.Getter;
+
+import com.rassafel.blobstorage.core.BlobStorage;
 
 /**
  * Upload blob event
  */
 @Getter
 public class UploadBlobEvent extends DefaultBlobEvent {
+    /**
+     * Reference to the created blob
+     */
     private final String ref;
 
     public UploadBlobEvent(BlobStorage storage, String ref) {

@@ -16,23 +16,24 @@
 
 package com.rassafel.blobstorage.local;
 
-import com.rassafel.blobstorage.core.StoredBlobObject;
-import com.rassafel.blobstorage.core.query.StoreBlobRequest;
-import com.rassafel.blobstorage.core.support.DefaultBlobObject;
-import org.springframework.util.Assert;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 
+import lombok.NonNull;
+
+import com.rassafel.blobstorage.core.StoredBlobObject;
+import com.rassafel.blobstorage.core.query.StoreBlobRequest;
+import com.rassafel.blobstorage.core.support.DefaultBlobObject;
+
 public class LocalStoredBlobObject extends DefaultBlobObject implements StoredBlobObject {
+    @NonNull
     private final Path localFile;
 
     protected LocalStoredBlobObject(BuilderImpl builder) {
         super(builder);
-        Assert.notNull(builder.localFile, "local file path cannot be null");
         this.localFile = builder.localFile;
     }
 
@@ -53,13 +54,13 @@ public class LocalStoredBlobObject extends DefaultBlobObject implements StoredBl
         return new BuilderImpl(this);
     }
 
-    public interface Builder<O extends LocalStoredBlobObject, B extends Builder<O, B>> extends DefaultBlobObject.Builder<O, B> {
+    public interface Builder<O extends LocalStoredBlobObject, B extends Builder<O, B>>
+            extends DefaultBlobObject.Builder<O, B> {
         B localFile(Path localFile);
     }
 
-    protected static abstract class AbstractBuilder<O extends LocalStoredBlobObject, B extends Builder<O, B>>
-        extends DefaultBlobObject.AbstractBuilder<O, B>
-        implements Builder<O, B> {
+    protected abstract static class AbstractBuilder<O extends LocalStoredBlobObject, B extends Builder<O, B>>
+            extends DefaultBlobObject.AbstractBuilder<O, B> implements Builder<O, B> {
         protected Path localFile;
 
         protected AbstractBuilder() {
@@ -96,13 +97,13 @@ public class LocalStoredBlobObject extends DefaultBlobObject implements StoredBl
         }
 
         @Override
-        public LocalStoredBlobObject build() {
-            return new LocalStoredBlobObject(this);
+        protected BuilderImpl self() {
+            return this;
         }
 
         @Override
-        protected BuilderImpl self() {
-            return this;
+        public LocalStoredBlobObject build() {
+            return new LocalStoredBlobObject(this);
         }
     }
 }

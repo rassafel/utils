@@ -20,7 +20,13 @@ package com.rassafel.commons.builder;
  * A special type of {@link Builder} that can be used when the built type
  * implements {@link ToCopyableBuilder}.
  */
-public interface CopyableBuilder<O extends ToCopyableBuilder<O, B>, B extends CopyableBuilder<O, B>> extends Builder<O, B> {
+public interface CopyableBuilder<O extends ToCopyableBuilder<O, B>, B extends CopyableBuilder<O, B>>
+        extends Builder<O, B> {
+    /**
+     * Copies the built object.
+     *
+     * @return a new builder with a copied object.
+     */
     default B copy() {
         return build().toBuilder();
     }

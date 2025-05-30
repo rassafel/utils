@@ -18,6 +18,9 @@ package com.rassafel.commons.exception;
 
 import java.lang.annotation.*;
 
+/**
+ * Exception code annotation
+ */
 @Target(value = {ElementType.METHOD})
 @Retention(value = RetentionPolicy.RUNTIME)
 @Repeatable(ExceptionCode.List.class)

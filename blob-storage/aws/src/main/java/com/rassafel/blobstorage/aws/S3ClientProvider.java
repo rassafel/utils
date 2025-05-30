@@ -19,8 +19,21 @@ package com.rassafel.blobstorage.aws;
 import software.amazon.awssdk.services.s3.S3AsyncClient;
 import software.amazon.awssdk.services.s3.S3Client;
 
+/**
+ * Provides an instance of {@link S3Client} and {@link S3AsyncClient}.
+ */
 public interface S3ClientProvider {
+    /**
+     * Returns an instance of synchronous client.
+     *
+     * @return an instance of synchronous client.
+     */
     S3Client getS3Client();
 
+    /**
+     * Returns an instance of asynchronous client.
+     *
+     * @return an instance of asynchronous client.
+     */
     S3AsyncClient getS3AsyncClient();
 }

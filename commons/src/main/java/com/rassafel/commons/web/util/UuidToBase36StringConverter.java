@@ -19,19 +19,41 @@ package com.rassafel.commons.web.util;
 import java.math.BigInteger;
 import java.util.UUID;
 
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+
+/**
+ * Converts a {@link UUID} to a base 36 string.
+ */
+@RequiredArgsConstructor
 public class UuidToBase36StringConverter implements UuidToStringConverter {
+
     @Override
     public String apply(UUID uuid) {
         return convertToString(uuid);
     }
 
-    public String convertToString(UUID id) {
+    /**
+     * Converts a {@link UUID} to a base 36 string.
+     *
+     * @param id the uuid to convert
+     * @return the base 36 string representation of the uuid
+     */
+    public String convertToString(@NonNull UUID id) {
         var hex = id.toString().replace("-", "");
         return new BigInteger(hex, 16).toString(36);
     }
 
-    public UUID convertFromString(String x) {
-        var hex = new BigInteger(x, 36).toString(16);
+    /**
+     * Converts a base 36 string to a {@link UUID}.
+     *
+     * @param x the base 36 string to convert
+     * @return the uuid represented by the base 36 string
+     */
+    public UUID convertFromString(@NonNull String x) {
+        var hex = new BigInteger(x, 36)
+                .toString(16)
+                .replaceFirst("(\\p{XDigit}{8})(\\p{XDigit}{4})(\\p{XDigit}{4})(\\p{XDigit}{4})(\\p{XDigit}+)", "$1-$2-$3-$4-$5");
         return UUID.fromString(hex);
     }
 }

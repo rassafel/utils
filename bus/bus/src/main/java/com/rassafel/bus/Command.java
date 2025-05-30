@@ -16,5 +16,10 @@
 
 package com.rassafel.bus;
 
+/**
+ * Represents a command that can be executed by a bus.
+ *
+ * @param <R> the type of result returned by the command
+ */
 public interface Command<R> {
 }

@@ -17,8 +17,15 @@
 package com.rassafel.blobstorage.event;
 
 /**
+ * Listener for blob events.
  *
+ * @param <E> the type of blob event
  */
 public interface BlobListener<E extends BlobEvent> {
+    /**
+     * Handles a blob event.
+     *
+     * @param event the blob event to handle
+     */
     void onBlobEvent(E event);
 }

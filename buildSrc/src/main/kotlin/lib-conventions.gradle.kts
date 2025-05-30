@@ -1,3 +1,7 @@
+import com.diffplug.gradle.spotless.FormatExtension
+import org.jetbrains.kotlin.gradle.plugin.KotlinBasePlugin
+import java.nio.charset.StandardCharsets
+
 plugins {
     `java-library`
     `java-test-fixtures`
@@ -20,14 +24,6 @@ java {
     targetCompatibility = JavaVersion.VERSION_21
 }
 
-val isCi = System.getenv("CI")?.isNotBlank() ?: false
-
-
-idea.module {
-    isDownloadSources = !isCi
-    isDownloadJavadoc = !isCi
-}
-
 tasks {
     compileJava {
         options.encoding = "UTF-8"
@@ -45,39 +41,89 @@ tasks {
 }
 
 spotless {
-    if (plugins.hasPlugin(JavaPlugin::class)) java {
+    encoding(StandardCharsets.UTF_8)
+
+    fun FormatExtension.defaults() {
+        toggleOffOn("@formatter:off", "@formatter:on")
+        leadingTabsToSpaces()
+        trimTrailingWhitespace()
+        endWithNewline()
+    }
+
+    if (plugins.hasPlugin(JavaBasePlugin::class)) java {
         cleanthat().version("2.20")
             .sourceCompatibility(java.sourceCompatibility.majorVersion)
             .addMutator("SafeAndConsensual")
             .addMutator("SafeButNotConsensual")
-        toggleOffOn("@formatter:off", "@formatter:on")
-        palantirJavaFormat("2.50.0").style("PALANTIR").formatJavadoc(true)
-        formatAnnotations()
+            .addMutator("ArithmethicAssignment")
+            .addMutator("ArraysDotStream")
+            .addMutator("AvoidMultipleUnaryOperators")
+            .addMutator("CollectionIndexOfToContains")
+            .addMutator("LiteralsFirstInComparisons")
+            .addMutator("ModifierOrder")
+            .addMutator("OptionalNotEmpty")
+            .addMutator("RemoveExplicitCallToSuper")
+            .addMutator("SimplifyBooleanExpression")
+            .addMutator("SimplifyBooleanInitialization")
+            .addMutator("SimplifyStartsWith")
+            .addMutator("StreamAnyMatch")
+            .addMutator("StringIndexOfToContains")
+            .addMutator("StringToString")
+            .addMutator("UnnecessaryBoxing")
+            .addMutator("UnnecessaryModifier")
+            .addMutator("UseCollectionIsEmpty")
+            .addMutator("UseStringIsEmpty")
+            .addMutator("UseUnderscoresInNumericLiterals")
+            .addMutator("AvoidUncheckedExceptionsInSignatures")
+            .addMutator("CollectionToOptional")
+            .addMutator("EmptyControlStatement")
+            .addMutator("EnumsWithoutEquals")
+            .addMutator("EnumsWithoutEquals")
+            .addMutator("ForEachIfBreakToStreamFindFirst")
+            .addMutator("ForEachIfToIfStreamAnyMatch")
+            .addMutator("LambdaIsMethodReference")
+            .addMutator("LambdaReturnsSingleStatement")
+            .addMutator("LocalVariableTypeInference")
+            .addMutator("PrimitiveWrapperInstantiation")
+            .addMutator("RedundantLogicalComplementsInStream")
+            .addMutator("RemoveAllToClearCollection")
+            .addMutator("StreamFlatMapStreamToFlatMap")
+            .addMutator("StreamForEachNestingForLoopToFlatMap")
+            .addMutator("StringFromString")
+            .addMutator("UnnecessaryFullyQualifiedName")
+            .addMutator("UnnecessaryImport")
+            .addMutator("UnnecessaryLambdaEnclosingParameters")
+            .addMutator("UnnecessarySemicolon")
+            .addMutator("UseDiamondOperatorJdk8")
+            .addMutator("UsePredefinedStandardCharset")
+        palantirJavaFormat("2.50.0").style("PALANTIR").formatJavadoc(false)
         removeUnusedImports()
         importOrder(
             "java", "javax", "", "com.rassafel",
             "\\#java", "\\#javax", "\\#", "\\#com.rassafel"
         )
-        trimTrailingWhitespace()
-        endWithNewline()
+        defaults()
     }
 
-    if (plugins.hasPlugin(GroovyPlugin::class)) groovy {
-        toggleOffOn("@formatter:off", "@formatter:on")
+    if (plugins.hasPlugin(GroovyBasePlugin::class)) groovy {
         importOrder(
             "java", "javax", "", "com.rassafel",
             "\\#java", "\\#javax", "\\#", "\\#com.rassafel"
         )
-        removeSemicolons()
-        greclipse()
+//      FixMe: spock
+//        greclipse()
         excludeJava()
+        defaults()
+    }
+
+    if (plugins.hasPlugin(KotlinBasePlugin::class)) kotlin {
+        ktlint()
+        defaults()
     }
 
     kotlinGradle {
-        toggleOffOn("@formatter:off", "@formatter:on")
         ktlint()
-        trimTrailingWhitespace()
-        endWithNewline()
+        defaults()
     }
 }
 

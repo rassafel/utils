@@ -16,6 +16,12 @@
 
 package com.rassafel.bus;
 
+/**
+ * A handler of commands.
+ *
+ * @param <R> the type of result.
+ * @param <C> the type of command.
+ */
 public interface CommandHandler<R, C extends Command<R>> {
     R handle(C command);
 }

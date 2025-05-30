@@ -16,12 +16,12 @@
 
 package com.rassafel.commons.exception
 
-
-import com.rassafel.commons.spel.SpelResolver
 import org.springframework.aop.aspectj.annotation.AspectJProxyFactory
 import org.springframework.core.DefaultParameterNameDiscoverer
 import org.springframework.expression.spel.standard.SpelExpressionParser
 import spock.lang.Specification
+
+import com.rassafel.commons.spel.SpelResolver
 
 class ExceptionCodeAspectTest extends Specification {
     SystemComponent target = Mock()

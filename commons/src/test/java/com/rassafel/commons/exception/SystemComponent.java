@@ -16,7 +16,6 @@
 
 package com.rassafel.commons.exception;
 
-
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
@@ -30,9 +29,9 @@ interface SystemComponent {
     void inheritance();
 
     @ExceptionCode(value = "1", on = RuntimeException.class, details = {
-        @ExceptionCodeDetail(key = "simple", value = "simple"),
-        @ExceptionCodeDetail(key = "simpleArgument", value = "#id"),
-        @ExceptionCodeDetail(key = "complexArgument", value = "#complex.id"),
+            @ExceptionCodeDetail(key = "simple", value = "simple"),
+            @ExceptionCodeDetail(key = "simpleArgument", value = "#id"),
+            @ExceptionCodeDetail(key = "complexArgument", value = "#complex.id"),
     })
     void detail(String id, ComplexObject complex);
 

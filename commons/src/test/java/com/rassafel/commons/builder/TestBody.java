@@ -16,7 +16,6 @@
 
 package com.rassafel.commons.builder;
 
-
 import lombok.Getter;
 
 @Getter
@@ -31,8 +30,8 @@ abstract class TestBody<O extends TestBody<O, B>, B extends TestBody.Builder<O, 
         B body(String test);
     }
 
-    protected static abstract class AbstractBuilder<O extends TestBody<O, B>, B extends Builder<O, B>>
-        implements Builder<O, B> {
+    protected abstract static class AbstractBuilder<O extends TestBody<O, B>, B extends Builder<O, B>>
+            implements Builder<O, B> {
         protected String body;
 
         protected AbstractBuilder() {

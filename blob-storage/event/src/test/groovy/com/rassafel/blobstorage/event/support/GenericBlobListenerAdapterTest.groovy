@@ -16,12 +16,12 @@
 
 package com.rassafel.blobstorage.event.support
 
+import spock.lang.Specification
 
 import com.rassafel.blobstorage.event.BlobEvent
 import com.rassafel.blobstorage.event.BlobListener
 import com.rassafel.blobstorage.event.type.DeleteBlobEvent
 import com.rassafel.blobstorage.event.type.UploadBlobEvent
-import spock.lang.Specification
 
 class GenericBlobListenerAdapterTest extends Specification {
     def "BlobEvent adapter"() {
@@ -50,40 +50,40 @@ class GenericBlobListenerAdapterTest extends Specification {
 
     def rootListeners() {
         return [
-            new BlobListener<BlobEvent>() {
-                @Override
-                void onBlobEvent(BlobEvent event) {
-                }
-            },
-            new StubBlobListener<BlobEvent>(),
-            new StubRootBlobListener(),
-            new StubGenericBlobListener(BlobEvent),
-            new StubRootBlobListenerInterface() {
-                @Override
-                void onBlobEvent(BlobEvent event) {
-                }
-            },
-            new StubRootBlogListenerFromInterface(),
+                new BlobListener<BlobEvent>() {
+                    @Override
+                    void onBlobEvent(BlobEvent event) {
+                    }
+                },
+                new StubBlobListener<BlobEvent>(),
+                new StubRootBlobListener(),
+                new StubGenericBlobListener(BlobEvent),
+                new StubRootBlobListenerInterface() {
+                    @Override
+                    void onBlobEvent(BlobEvent event) {
+                    }
+                },
+                new StubRootBlogListenerFromInterface(),
         ]
     }
 
     def deleteListeners() {
         return [
-            new BlobListener<DeleteBlobEvent>() {
-                @Override
-                void onBlobEvent(DeleteBlobEvent event) {
-                }
-            },
-            // ToDo: fix
-            //  new StubBlobListener<DeleteBlobEvent>(),
-            new StubDeleteBlobListener(),
-            new StubGenericBlobListener(DeleteBlobEvent),
-            new StubDeleteBlobListenerInterface() {
-                @Override
-                void onBlobEvent(DeleteBlobEvent event) {
-                }
-            },
-            new StubDeleteBlogListenerFromInterface(),
+                new BlobListener<DeleteBlobEvent>() {
+                    @Override
+                    void onBlobEvent(DeleteBlobEvent event) {
+                    }
+                },
+                // ToDo: fix
+                //  new StubBlobListener<DeleteBlobEvent>(),
+                new StubDeleteBlobListener(),
+                new StubGenericBlobListener(DeleteBlobEvent),
+                new StubDeleteBlobListenerInterface() {
+                    @Override
+                    void onBlobEvent(DeleteBlobEvent event) {
+                    }
+                },
+                new StubDeleteBlogListenerFromInterface(),
         ]
     }
 }

@@ -16,14 +16,16 @@
 
 package com.rassafel.blobstorage.core.support.pipe;
 
-import com.rassafel.blobstorage.core.BlobStorage;
-import com.rassafel.blobstorage.core.StoreBlobException;
+import java.util.function.Function;
+
 import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.util.Assert;
 
-import java.util.function.Function;
+import com.rassafel.blobstorage.core.BlobStorage;
+import com.rassafel.blobstorage.core.StoreBlobException;
 
 /**
  * Delete blob pipe.
@@ -33,14 +35,13 @@ public class DeletePipe {
     private BlobStorage storage;
     private String ref;
 
-    public DeletePipe storage(BlobStorage storage) {
-        Assert.notNull(storage, "storage cannot by null");
+    public DeletePipe storage(@NonNull BlobStorage storage) {
         this.storage = storage;
         return this;
     }
 
     public DeletePipe ref(String ref) {
-        Assert.notNull(ref, "ref cannot by null");
+        Assert.hasText(ref, "ref cannot be blank");
         this.ref = ref;
         return this;
     }
@@ -53,9 +54,9 @@ public class DeletePipe {
         return delete(transformer, ExceptionHandler.ignore());
     }
 
-    public <Result> Result delete(Transformer<Result> transformer, ExceptionHandler<Result> exceptionHandler) {
+    public <Result> Result delete(@NonNull Transformer<Result> transformer, @NonNull ExceptionHandler<Result> exceptionHandler) {
         Assert.notNull(storage, "storage cannot be null");
-        Assert.hasText(ref, "ref cannot be empty");
+        Assert.hasText(ref, "ref cannot be blank");
         var ctx = new Context(storage, ref);
         try {
             var result = storage.deleteByRef(ref);
@@ -74,8 +75,7 @@ public class DeletePipe {
             return (ctx, result) -> result;
         }
 
-        static <T> Transformer<T> switchResult(Transformer<T> success,
-                                               Transformer<T> fail) {
+        static <T> Transformer<T> switchResult(Transformer<T> success, Transformer<T> fail) {
             return (ctx, result) -> {
                 if (result) return success.transform(ctx, true);
                 return fail.transform(ctx, false);

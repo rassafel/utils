@@ -16,14 +16,13 @@
 
 package com.rassafel.bus.support;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 import com.rassafel.bus.PreHandleQuery;
 import com.rassafel.bus.Query;
 import com.rassafel.bus.QueryHandler;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
 
 public class CompositePreHandleQuery implements PreHandleQuery {
     private final List<PreHandleQuery> handlers = new ArrayList<>();

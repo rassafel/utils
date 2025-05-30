@@ -16,19 +16,18 @@
 
 package com.rassafel.blobstorage.mem;
 
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+import java.util.Arrays;
+
 import com.rassafel.blobstorage.core.StoredBlobObject;
 import com.rassafel.blobstorage.core.query.StoreBlobRequest;
 import com.rassafel.blobstorage.core.support.DefaultBlobObject;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Arrays;
-
 public class InMemoryStoredBlobObject extends DefaultBlobObject implements StoredBlobObject {
     private final byte[] bytes;
 
-    private InMemoryStoredBlobObject(AbstractBuilder<?, ?> builder) {
+    protected InMemoryStoredBlobObject(AbstractBuilder<?, ?> builder) {
         super(builder);
         if (builder.bytes != null) {
             this.bytes = Arrays.copyOf(builder.bytes, builder.bytes.length);
@@ -55,13 +54,13 @@ public class InMemoryStoredBlobObject extends DefaultBlobObject implements Store
         return new BuilderImpl(this);
     }
 
-    public interface Builder<O extends InMemoryStoredBlobObject, B extends Builder<O, B>> extends DefaultBlobObject.Builder<O, B> {
+    public interface Builder<O extends InMemoryStoredBlobObject, B extends Builder<O, B>>
+            extends DefaultBlobObject.Builder<O, B> {
         B bytes(byte[] bytes);
     }
 
-    protected static abstract class AbstractBuilder<O extends InMemoryStoredBlobObject, B extends Builder<O, B>>
-        extends DefaultBlobObject.AbstractBuilder<O, B>
-        implements Builder<O, B> {
+    protected abstract static class AbstractBuilder<O extends InMemoryStoredBlobObject, B extends Builder<O, B>>
+            extends DefaultBlobObject.AbstractBuilder<O, B> implements Builder<O, B> {
         protected byte[] bytes;
 
         protected AbstractBuilder() {

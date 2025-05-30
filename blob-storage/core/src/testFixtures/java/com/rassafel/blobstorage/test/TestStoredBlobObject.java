@@ -16,12 +16,11 @@
 
 package com.rassafel.blobstorage.test;
 
+import java.io.IOException;
+import java.io.InputStream;
 
 import com.rassafel.blobstorage.core.StoredBlobObject;
 import com.rassafel.blobstorage.core.support.DefaultBlobObject;
-
-import java.io.IOException;
-import java.io.InputStream;
 
 public class TestStoredBlobObject extends DefaultBlobObject implements StoredBlobObject {
     private final InputStream inputStream;
@@ -49,19 +48,19 @@ public class TestStoredBlobObject extends DefaultBlobObject implements StoredBlo
         return inputStream;
     }
 
-    public interface Builder<O extends TestStoredBlobObject, B extends Builder<O, B>> extends DefaultBlobObject.Builder<O, B> {
+    public interface Builder<O extends TestStoredBlobObject, B extends Builder<O, B>>
+            extends DefaultBlobObject.Builder<O, B> {
         B inputStream(InputStream inputStream);
     }
 
-    protected static class BuilderImpl
-        extends DefaultBlobObject.AbstractBuilder<TestStoredBlobObject, BuilderImpl>
-        implements Builder<TestStoredBlobObject, BuilderImpl> {
+    protected static class BuilderImpl extends DefaultBlobObject.AbstractBuilder<TestStoredBlobObject, BuilderImpl>
+            implements Builder<TestStoredBlobObject, BuilderImpl> {
         private InputStream inputStream;
 
         protected BuilderImpl() {
         }
 
-        public BuilderImpl(StoredBlobObject object) {
+        protected BuilderImpl(StoredBlobObject object) {
             super(object);
             try {
                 this.inputStream = object.toInputStream();

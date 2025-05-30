@@ -16,6 +16,15 @@
 
 package com.rassafel.bus;
 
+/**
+ * Pre-handle query interface. This interface is used to pre-process queries before they are handled by a query.
+ */
 public interface PreHandleQuery {
+    /**
+     * Accepts the query and handles it using the provided handler.
+     *
+     * @param handler the handler to handle the query
+     * @param query   the query to be handled
+     */
     void accept(QueryHandler<?, ?> handler, Query<?> query);
 }

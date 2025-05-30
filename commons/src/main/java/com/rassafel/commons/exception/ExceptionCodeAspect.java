@@ -16,7 +16,11 @@
 
 package com.rassafel.commons.exception;
 
-import com.rassafel.commons.spel.SpelResolver;
+import java.util.*;
+import java.util.stream.Stream;
+
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.tuple.Pair;
@@ -27,56 +31,41 @@ import org.aspectj.lang.reflect.MethodSignature;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
 
-import java.util.*;
-import java.util.stream.Stream;
+import com.rassafel.commons.spel.SpelResolver;
 
+/**
+ * Aspect that handles exceptions and returns the appropriate error code based on the exception type.
+ */
 @Slf4j
+@RequiredArgsConstructor
 @Aspect
 @Component
 public class ExceptionCodeAspect {
+    @NonNull
     private final SpelResolver spelResolver;
 
-    public ExceptionCodeAspect(SpelResolver spelResolver) {
-        this.spelResolver = spelResolver;
-    }
-
-    @AfterThrowing(
-        value = "@annotation(exceptionCodes)",
-        throwing = "ex"
-    )
-    public void handleException(
-        JoinPoint jp, Throwable ex, ExceptionCode.List exceptionCodes
-    ) throws Throwable {
+    @AfterThrowing(value = "@annotation(exceptionCodes)", throwing = "ex")
+    public void handleException(JoinPoint jp, Throwable ex, ExceptionCode.List exceptionCodes) throws Throwable {
         doHandleException(jp, ex, exceptionCodes.value());
     }
 
-    @AfterThrowing(
-        value = "@annotation(exceptionCode)",
-        throwing = "ex"
-    )
-    public void handleException(
-        JoinPoint jp, Throwable ex, ExceptionCode exceptionCode
-    ) throws Throwable {
+    @AfterThrowing(value = "@annotation(exceptionCode)", throwing = "ex")
+    public void handleException(JoinPoint jp, Throwable ex, ExceptionCode exceptionCode) throws Throwable {
         doHandleException(jp, ex, exceptionCode);
     }
 
-    private void doHandleException(
-        JoinPoint jp,
-        Throwable ex,
-        ExceptionCode... exceptionCodes
-    ) throws Throwable {
-        log.atDebug()
-            .addArgument(() -> getMethodName(jp))
-            .log("Handle Exception on {}");
-        if (!hasApplicationException(ex)) {
-            var code = foundMatched(ex, exceptionCodes);
-            if (code != null) {
-                var applicationException = createException(jp, code);
-                log.atDebug()
+    private void doHandleException(JoinPoint jp, Throwable ex, ExceptionCode... exceptionCodes) throws Throwable {
+        log.atDebug().addArgument(() -> getMethodName(jp)).log("Handle Exception on {}");
+        if (hasApplicationException(ex)) {
+            throw ex;
+        }
+        var code = foundMatched(ex, exceptionCodes);
+        if (code != null) {
+            var applicationException = createException(jp, code);
+            log.atDebug()
                     .addArgument(applicationException::toCode)
                     .log("Add found ApplicationException to suppressed, code: {}");
-                ex.addSuppressed(applicationException);
-            }
+            ex.addSuppressed(applicationException);
         }
         throw ex;
     }
@@ -93,12 +82,9 @@ public class ExceptionCodeAspect {
             log.debug("Current exception is ApplicationException");
             return true;
         }
-        var suppressed = ex.getSuppressed();
-        for (var throwable : suppressed) {
-            if (throwable instanceof ApplicationException) {
-                log.debug("Found suppressed ApplicationException");
-                return true;
-            }
+        if (Stream.of(ex.getSuppressed()).anyMatch(ApplicationException.class::isInstance)) {
+            log.debug("Found suppressed ApplicationException");
+            return true;
         }
         log.debug("ApplicationException not found");
         return false;
@@ -110,45 +96,42 @@ public class ExceptionCodeAspect {
         parents.add(ex.getClass());
         parents.addAll(ClassUtils.getAllSuperclasses(ex.getClass()));
         var found = Arrays.stream(codes)
-            .map(code -> Pair.of(evaluateDeep(code, parents), code))
-            .filter(p -> Objects.nonNull(p.getKey()))
-            .min(Map.Entry.comparingByKey())
-            .orElse(null);
+                .map(code -> Pair.of(evaluateDeep(code, parents), code))
+                .filter(p -> Objects.nonNull(p.getKey()))
+                .min(Map.Entry.comparingByKey())
+                .orElse(null);
         if (found == null) {
             log.debug("Not found matched exception code");
             return null;
         }
         var exceptionCode = found.getValue();
         log.debug("Best matched exception code, type: {}; value: {}; matched class: {}",
-            exceptionCode.type(), exceptionCode.value(), parents.get(found.getKey()));
+                exceptionCode.type(), exceptionCode.value(), parents.get(found.getKey()));
         return exceptionCode;
     }
 
     @Nullable
     private Integer evaluateDeep(ExceptionCode code, List<Class<?>> classes) {
         return Arrays.stream(code.on())
-            .flatMap(ex -> {
-                var index = classes.indexOf(ex);
-                if (index == -1) return Stream.empty();
-                log.trace("Found matched exception code, type: {}; value: {}; matched class: {}; deep: {}",
-                    code.type(), code.value(), classes.get(index), index);
-                return Stream.of(index);
-            })
-            .min(Comparator.naturalOrder())
-            .orElse(null);
+                .flatMap(ex -> {
+                    var index = classes.indexOf(ex);
+                    if (index == -1) return Stream.empty();
+                    log.trace("Found matched exception code, type: {}; value: {}; matched class: {}; deep: {}",
+                            code.type(), code.value(), classes.get(index), index);
+                    return Stream.of(index);
+                })
+                .min(Comparator.naturalOrder())
+                .orElse(null);
     }
 
     private ApplicationException createException(JoinPoint jp, ExceptionCode code) {
         var method = ((MethodSignature) jp.getSignature()).getMethod();
         var args = jp.getArgs();
-        var exception = new ApplicationException(
-            code.value(), code.type());
+        var exception = new ApplicationException(code.value(), code.type());
         for (var detail : code.details()) {
-            var resolved = spelResolver.resolve(
-                method, args, detail.key(), detail.value()
-            );
+            var resolved = spelResolver.resolve(method, args, detail.key(), detail.value());
             log.trace("Resolved detail, key: {}; value: {}",
-                detail.key(), resolved);
+                    detail.key(), resolved);
             exception.addDetail(detail.key(), resolved);
         }
         return exception;

@@ -16,19 +16,25 @@
 
 package com.rassafel.commons.web;
 
+import java.io.IOException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.MDC;
 import org.springframework.web.filter.OncePerRequestFilter;
 import org.springframework.web.util.WebUtils;
 
-import java.io.IOException;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-
+/**
+ * Filter that adds request information to MDC (Mapped Diagnostic Context).
+ * This is useful for logging across different components of an application.
+ */
+@RequiredArgsConstructor
 public class MdcRequestFilter extends OncePerRequestFilter {
     public static final String REQUEST_REMOTE_HOST_MDC_KEY = "req.remoteHost";
     public static final String REQUEST_USER_AGENT_MDC_KEY = "req.userAgent";
@@ -44,7 +50,7 @@ public class MdcRequestFilter extends OncePerRequestFilter {
     @Override
     protected void initFilterBean() {
         try {
-            InetAddress local = InetAddress.getLocalHost();
+            var local = InetAddress.getLocalHost();
             host = local.getHostName();
         } catch (UnknownHostException e) {
             logger.info("Could not retrieve hostname.", e);
@@ -52,9 +58,8 @@ public class MdcRequestFilter extends OncePerRequestFilter {
     }
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request,
-                                    HttpServletResponse response,
-                                    FilterChain filterChain) throws ServletException, IOException {
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+            throws ServletException, IOException {
         insertIntoMDC(request);
         try {
             filterChain.doFilter(request, response);

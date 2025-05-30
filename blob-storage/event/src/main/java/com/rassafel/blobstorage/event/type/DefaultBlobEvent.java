@@ -16,17 +16,23 @@
 
 package com.rassafel.blobstorage.event.type;
 
-import com.rassafel.blobstorage.core.BlobStorage;
-import com.rassafel.blobstorage.event.BlobEvent;
-
 import java.time.Clock;
 import java.time.LocalDateTime;
+
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+
+import com.rassafel.blobstorage.core.BlobStorage;
+import com.rassafel.blobstorage.event.BlobEvent;
 
 /**
  * Default blob event
  */
+@RequiredArgsConstructor
 public class DefaultBlobEvent implements BlobEvent {
+    @NonNull
     private final BlobStorage storage;
+    @NonNull
     private final LocalDateTime timestamp;
 
     public DefaultBlobEvent(BlobStorage storage) {
@@ -35,11 +41,6 @@ public class DefaultBlobEvent implements BlobEvent {
 
     public DefaultBlobEvent(BlobStorage storage, Clock clock) {
         this(storage, LocalDateTime.now(clock));
-    }
-
-    public DefaultBlobEvent(BlobStorage storage, LocalDateTime timestamp) {
-        this.storage = storage;
-        this.timestamp = timestamp;
     }
 
     @Override

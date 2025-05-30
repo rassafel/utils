@@ -16,90 +16,202 @@
 
 package com.rassafel.commons.backoff;
 
+import java.time.Duration;
 
+import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import org.springframework.util.Assert;
 
-import java.time.Duration;
-
+/**
+ * Utility class for creating and managing backoff strategies.
+ */
 @UtilityClass
 public final class BackOffs {
-    public static BackOff fixed(Duration delay) {
-        Assert.notNull(delay, "delay must not be null");
-        return fixed(delay.toMillis());
-    }
 
+    /**
+     * Creates a fixed BackOff instance with the specified delay in milliseconds.
+     *
+     * @param delay the fixed delay in milliseconds
+     * @return a fixed BackOff instance
+     */
     public static BackOff fixed(long delay) {
         return new FixedBackOff(delay);
     }
 
-    public static BackOff limitDelay(Duration maxDelay, BackOff backOff) {
-        Assert.notNull(maxDelay, "maxDelay must not be null");
-        return limitDelay(maxDelay.toMillis(), backOff);
+    /**
+     * Creates a fixed BackOff instance with the specified delay.
+     *
+     * @param delay the fixed delay
+     * @return a fixed BackOff instance
+     */
+    public static BackOff fixed(@NonNull Duration delay) {
+        return fixed(delay.toMillis());
     }
 
+    /**
+     * Creates a BackOff instance that limits the delay to the specified maximum.
+     *
+     * @param maxDelay the maximum allowed delay in milliseconds
+     * @param backOff  the underlying BackOff instance
+     * @return a BackOff instance with limited delay
+     */
     public static BackOff limitDelay(long maxDelay, BackOff backOff) {
         return new MaxDelayBackOff(maxDelay, backOff);
     }
 
-    public static BackOff randomDelay(Duration max) {
-        Assert.notNull(max, "max must not be null");
-        return randomDelay(max.toMillis());
+    /**
+     * Creates a BackOff instance that limits the delay to the specified maximum.
+     *
+     * @param maxDelay the maximum allowed delay
+     * @param backOff  the underlying BackOff instance
+     * @return a BackOff instance with limited delay
+     */
+    public static BackOff limitDelay(@NonNull Duration maxDelay, BackOff backOff) {
+        return limitDelay(maxDelay.toMillis(), backOff);
     }
 
-    public static BackOff randomDelay(long max) {
-        return randomDelay(0, max);
-    }
-
-    public static BackOff randomDelay(Duration min, Duration max) {
-        Assert.notNull(min, "min must not be null");
-        Assert.notNull(max, "max must not be null");
-        return randomDelay(min.toMillis(), max.toMillis());
-    }
-
-    public static BackOff randomDelay(long min, long max) {
-        if (min == max) return fixed(min);
-        return new RandomBackOff(min, max);
-    }
-
-    public static BackOff exponential(Duration baseDelay) {
-        Assert.notNull(baseDelay, "baseDelay must not be null");
+    /**
+     * Creates a BackOff instance that returns an exponentially increasing delay.
+     *
+     * @param baseDelay the initial delay
+     * @return a BackOff instance with exponential delay
+     */
+    public static BackOff exponential(@NonNull Duration baseDelay) {
         return exponential(baseDelay.toMillis());
     }
 
+    /**
+     * Creates a BackOff instance that returns an exponentially increasing delay.
+     *
+     * @param baseDelay the initial delay in milliseconds
+     * @return a BackOff instance with exponential delay
+     */
     public static BackOff exponential(long baseDelay) {
         return exponential(baseDelay, 1.5d);
     }
 
-    public static BackOff exponential(Duration baseDelay, double multiplier) {
-        Assert.notNull(baseDelay, "baseDelay must not be null");
+    /**
+     * Creates a BackOff instance that returns an exponentially increasing delay.
+     *
+     * @param baseDelay  the initial delay
+     * @param multiplier the multiplier for the exponential delay
+     * @return a BackOff instance with exponential delay
+     */
+    public static BackOff exponential(@NonNull Duration baseDelay, double multiplier) {
         return exponential(baseDelay.toMillis(), multiplier);
     }
 
+    /**
+     * Creates a BackOff instance that returns an exponentially increasing delay.
+     *
+     * @param baseDelay  the initial delay in milliseconds
+     * @param multiplier the multiplier for the exponential delay
+     * @return a BackOff instance with exponential delay
+     */
     public static BackOff exponential(long baseDelay, double multiplier) {
         return new ExponentialBackOff(multiplier, baseDelay);
     }
 
-    public static BackOff additionalRandom(Duration max, BackOff backOff) {
-        Assert.notNull(max, "max must not be null");
+    /**
+     * Creates a BackOff instance that returns a delay between 0 and the specified maximum.
+     *
+     * @param max the maximum allowed delay
+     * @return a BackOff instance that returns a random delay
+     */
+    public static BackOff randomDelay(@NonNull Duration max) {
+        return randomDelay(max.toMillis());
+    }
+
+    /**
+     * Creates a BackOff instance that introduces random delays up to the specified maximum.
+     *
+     * @param max the maximum allowed delay in milliseconds
+     * @return a BackOff instance with random delay
+     */
+    public static BackOff randomDelay(long max) {
+        return randomDelay(0, max);
+    }
+
+    /**
+     * Creates a BackOff instance that introduces random delays up to the specified maximum.
+     *
+     * @param min the minimum allowed delay
+     * @param max the maximum allowed delay
+     * @return a BackOff instance with random delay
+     */
+    public static BackOff randomDelay(@NonNull Duration min, @NonNull Duration max) {
+        return randomDelay(min.toMillis(), max.toMillis());
+    }
+
+    /**
+     * Creates a BackOff instance that introduces random delays up to the specified maximum.
+     *
+     * @param min the minimum allowed delay in milliseconds
+     * @param max the maximum allowed delay in milliseconds
+     * @return a BackOff instance with random delay
+     */
+    public static BackOff randomDelay(long min, long max) {
+        if (min == max) {
+            return fixed(min);
+        } else {
+            return additionalRandom(min, max, fixed(0));
+        }
+    }
+
+    /**
+     * Creates a BackOff instance that introduces random additional delays up to the specified maximum.
+     *
+     * @param max     the maximum allowed additional delay
+     * @param backOff the underlying BackOff instance
+     * @return a BackOff instance with random additional delay
+     */
+    public static BackOff additionalRandom(@NonNull Duration max, BackOff backOff) {
         return additionalRandom(max.toMillis(), backOff);
     }
 
+    /**
+     * Creates a BackOff instance that introduces random additional delays up to the specified maximum.
+     *
+     * @param max     the maximum allowed additional delay in milliseconds
+     * @param backOff the underlying BackOff instance
+     * @return a BackOff instance with random additional delay
+     */
     public static BackOff additionalRandom(long max, BackOff backOff) {
         return additionalRandom(0, max, backOff);
     }
 
-    public static BackOff additionalRandom(Duration min, Duration max, BackOff backOff) {
-        Assert.notNull(min, "min must not be null");
-        Assert.notNull(max, "max must not be null");
+    /**
+     * Creates a BackOff instance that introduces random additional delays up to the specified maximum.
+     *
+     * @param min     the minimum allowed additional delay
+     * @param max     the maximum allowed additional delay
+     * @param backOff the underlying BackOff instance
+     * @return a BackOff instance with random additional delay
+     */
+    public static BackOff additionalRandom(@NonNull Duration min, @NonNull Duration max, BackOff backOff) {
         return additionalRandom(min.toMillis(), max.toMillis(), backOff);
     }
 
+    /**
+     * Creates a BackOff instance that introduces random additional delays up to the specified maximum.
+     *
+     * @param min     the minimum allowed additional delay in milliseconds
+     * @param max     the maximum allowed additional delay in milliseconds
+     * @param backOff the underlying BackOff instance
+     * @return a BackOff instance with random additional delay
+     */
     public static BackOff additionalRandom(long min, long max, BackOff backOff) {
         if (min == max) return backOff;
         return new AdditionalRandomBackOff(min, max, backOff);
     }
 
+    /**
+     * Creates a BackOff instance that limits the number of attempts to the specified maximum.
+     *
+     * @param maxAttempts the maximum allowed number of attempts
+     * @param backOff     the underlying BackOff instance
+     * @return a BackOff instance with limited attempts
+     */
     public static BackOff limitAttempts(long maxAttempts, BackOff backOff) {
         return new MaxAttemptBackOff(maxAttempts, backOff);
     }
@@ -118,31 +230,13 @@ public final class BackOffs {
         }
     }
 
-    private static final class RandomBackOff implements BackOff {
-        private final long minDelay;
-        private final long maxDelay;
-
-        private RandomBackOff(long minDelay, long maxDelay) {
-            Assert.isTrue(minDelay >= 0, "minDelay must be zero or positive");
-            Assert.isTrue(minDelay < maxDelay, "minDelay must be less then maxDelay");
-            this.minDelay = minDelay;
-            this.maxDelay = maxDelay;
-        }
-
-        @Override
-        public long evaluateDelay(long attempt) {
-            var delay = Math.round(Math.random() * (maxDelay - minDelay));
-            return minDelay + delay;
-        }
-    }
-
     private static final class MaxDelayBackOff implements BackOff {
         private final long maxDelay;
+        @NonNull
         private final BackOff delegate;
 
         private MaxDelayBackOff(long maxDelay, BackOff delegate) {
             Assert.isTrue(maxDelay >= 0, "maxDelay must be zero or positive");
-            Assert.notNull(delegate, "delegate must not be null");
             this.maxDelay = maxDelay;
             this.delegate = delegate;
         }
@@ -175,22 +269,22 @@ public final class BackOffs {
 
     private static final class AdditionalRandomBackOff implements BackOff {
         private final long minDelay;
-        private final long maxDelay;
+        private final long delayDiff;
+        @NonNull
         private final BackOff delegate;
 
         private AdditionalRandomBackOff(long minDelay, long maxDelay, BackOff delegate) {
-            Assert.notNull(delegate, "delegate must not be null");
             Assert.isTrue(minDelay < maxDelay, "minDelay must be less then maxDelay");
             this.minDelay = minDelay;
-            this.maxDelay = maxDelay;
             this.delegate = delegate;
+            this.delayDiff = Math.subtractExact(maxDelay, minDelay);
         }
 
         @Override
         public long evaluateDelay(long attempt) {
             var delay = delegate.evaluateDelay(attempt);
-            var randomDelay = Math.round(Math.random() * (maxDelay - minDelay)) + minDelay;
-            delay = delay + randomDelay;
+            var randomDelay = Math.addExact(Math.round(Math.random() * delayDiff), minDelay);
+            delay += randomDelay;
             if (delay <= 0) return Long.MAX_VALUE;
             return delay;
         }
@@ -198,11 +292,11 @@ public final class BackOffs {
 
     private static final class MaxAttemptBackOff implements BackOff {
         private final long maxAttempts;
+        @NonNull
         private final BackOff delegate;
 
         private MaxAttemptBackOff(long maxAttempts, BackOff delegate) {
             Assert.isTrue(maxAttempts > 0, "maxAttempts must be positive");
-            Assert.notNull(delegate, "delegate must not be null");
             this.maxAttempts = maxAttempts;
             this.delegate = delegate;
         }
@@ -214,4 +308,3 @@ public final class BackOffs {
         }
     }
 }
-

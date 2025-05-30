@@ -16,14 +16,17 @@
 
 package com.rassafel.blobstorage.core.impl.keygen;
 
-import com.rassafel.blobstorage.core.impl.KeyGenerator;
+import java.util.Objects;
+
+import lombok.RequiredArgsConstructor;
 import org.springframework.lang.Nullable;
 
-import java.util.Objects;
+import com.rassafel.blobstorage.core.impl.KeyGenerator;
 
 /**
  * The key generator return name.
  */
+@RequiredArgsConstructor
 public class NoOpKeyGenerator implements KeyGenerator {
     private static final NoOpKeyGenerator INSTANCE = new NoOpKeyGenerator();
 

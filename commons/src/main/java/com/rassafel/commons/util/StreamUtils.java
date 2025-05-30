@@ -16,12 +16,9 @@
 
 package com.rassafel.commons.util;
 
-import lombok.experimental.UtilityClass;
-import org.springframework.lang.Nullable;
-import org.springframework.util.Assert;
-
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -30,6 +27,12 @@ import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
+
+import lombok.AccessLevel;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.UtilityClass;
+import org.springframework.lang.Nullable;
 
 @UtilityClass
 public class StreamUtils {
@@ -40,7 +43,7 @@ public class StreamUtils {
      * @param <T>      item
      * @return items stream
      */
-    public static <T> Stream<T> emptyIfNull(Iterable<T> iterable) {
+    public static <T> Stream<T> emptyIfNull(@Nullable Iterable<T> iterable) {
         if (iterable == null) return Stream.empty();
         if (iterable instanceof Collection<T> collection) {
             if (collection.isEmpty()) return Stream.empty();
@@ -51,7 +54,6 @@ public class StreamUtils {
         return StreamSupport.stream(iterable.spliterator(), false);
     }
 
-
     /**
      * Create stream from array, if array is null return empty stream.
      *
@@ -59,7 +61,7 @@ public class StreamUtils {
      * @param <T>   item
      * @return items stream
      */
-    public static <T> Stream<T> emptyIfNull(T[] array) {
+    public static <T> Stream<T> emptyIfNull(@Nullable T[] array) {
         if (array == null || array.length == 0) return Stream.empty();
         return Arrays.stream(array);
     }
@@ -72,7 +74,7 @@ public class StreamUtils {
      * @param <V> value
      * @return items stream
      */
-    public static <K, V> Stream<Map.Entry<K, V>> emptyIfNull(Map<K, V> map) {
+    public static <K, V> Stream<Map.Entry<K, V>> emptyIfNull(@Nullable Map<K, V> map) {
         if (map == null || map.isEmpty()) return Stream.empty();
         return map.entrySet().stream();
     }
@@ -96,8 +98,7 @@ public class StreamUtils {
      * @param <T>          item
      * @return distinct predicate
      */
-    public static <T> Predicate<T> distinctByKey(Function<? super T, ?> keyExtractor, boolean passNull) {
-        Assert.notNull(keyExtractor, "keyExtractor must not be null");
+    public static <T> Predicate<T> distinctByKey(@NonNull Function<? super T, ?> keyExtractor, boolean passNull) {
         var seen = new ConcurrentHashMap<Object, Boolean>();
         return t -> {
             if (t == null) return passNull;
@@ -115,9 +116,12 @@ public class StreamUtils {
      * @param <R>      output type
      * @return composed function skip null mapping
      */
-    public static <S, R> R mapIfNotNull(@Nullable S source, Function<S, R> function) {
-        Objects.requireNonNull(function);
-        return source == null ? null : function.apply(source);
+    @Nullable
+    public static <S, R> R mapIfNotNull(@Nullable S source, @NonNull Function<S, R> function) {
+        if (source == null) {
+            return null;
+        }
+        return function.apply(source);
     }
 
     /**
@@ -128,8 +132,7 @@ public class StreamUtils {
      * @param <R>      output type
      * @return composed function skip null mapping
      */
-    public static <S, R> Function<S, R> mapIfNotNull(Function<S, R> function) {
-        Objects.requireNonNull(function);
+    public static <S, R> Function<S, R> mapIfNotNull(@NonNull Function<S, R> function) {
         return s -> s == null ? null : function.apply(s);
     }
 
@@ -173,28 +176,40 @@ public class StreamUtils {
      * @param <X> exception
      * @return item
      */
-    public static <T, X extends RuntimeException> Collector<T, ?, T> exactlyOne(Supplier<X> exceptionSupplier) throws X {
-        class ValueHolder implements Consumer<T> {
-            T value = null;
-            boolean present = false;
-
-            @Override
-            public void accept(T t) {
-                if (present) {
+    public static <T, X extends RuntimeException> Collector<T, ?, T> exactlyOne(@NonNull Supplier<X> exceptionSupplier) {
+        return Collector.<T, ValueHolder<T, X>, T>of(
+                () -> new ValueHolder<>(exceptionSupplier),
+                ValueHolder::accept,
+                (h1, h2) -> {
+                    if (h2.isPresent()) {
+                        h1.accept(h2.getValue());
+                    }
+                    return h1;
+                },
+                holder -> {
+                    if (holder.isPresent()) return holder.getValue();
                     throw exceptionSupplier.get();
-                }
-                value = t;
-                present = true;
+                });
+    }
+
+    @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
+    private static final class ValueHolder<T, X extends RuntimeException> implements Consumer<T> {
+        private final Supplier<X> exceptionSupplier;
+        private final AtomicReference<T> reference = new AtomicReference<>();
+
+        @Override
+        public void accept(T t) {
+            if (!reference.compareAndSet(null, t)) {
+                throw exceptionSupplier.get();
             }
         }
-        return Collector.of(ValueHolder::new, ValueHolder::accept, (h1, h2) -> {
-            if (h2.present) {
-                h1.accept(h2.value);
-            }
-            return h1;
-        }, holder -> {
-            if (holder.present) return holder.value;
-            throw exceptionSupplier.get();
-        });
+
+        public boolean isPresent() {
+            return reference.get() != null;
+        }
+
+        public T getValue() {
+            return reference.get();
+        }
     }
 }

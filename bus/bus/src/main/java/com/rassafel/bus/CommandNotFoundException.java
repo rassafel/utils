@@ -16,6 +16,9 @@
 
 package com.rassafel.bus;
 
+/**
+ * Exception thrown when a command is not found.
+ */
 public class CommandNotFoundException extends HandlerException {
     public CommandNotFoundException() {
     }

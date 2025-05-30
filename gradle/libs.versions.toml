@@ -22,3 +22,4 @@ spring-boot = { module = "org.springframework.boot:spring-boot" }
 spring-boot-autoconfigure = { module = "org.springframework.boot:spring-boot-autoconfigure" }
 spring-security-core = { module = "org.springframework.security:spring-security-core" }
 spock-core = { module = "org.spockframework:spock-core", version.ref = "spock" }
+spring-test = { module = "org.springframework:spring-test" }

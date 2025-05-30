@@ -16,9 +16,9 @@
 
 package com.rassafel.blobstorage.core.query;
 
-import org.springframework.lang.Nullable;
-
 import java.util.Map;
+
+import org.springframework.lang.Nullable;
 
 /**
  * Update attributes blob request

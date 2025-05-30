@@ -16,38 +16,45 @@
 
 package com.rassafel.commons.web;
 
-import jakarta.servlet.FilterChain;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-import org.slf4j.MDC;
-import org.springframework.web.filter.OncePerRequestFilter;
-
 import java.io.IOException;
 import java.time.Clock;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import org.slf4j.MDC;
+import org.springframework.web.filter.OncePerRequestFilter;
+
+/**
+ * A filter that adds a timestamp to the MDC and sets it as an attribute in the request.
+ * This is useful for logging and monitoring purposes to track the time of each request.
+ */
+@RequiredArgsConstructor
 public class TimestampRequestFilter extends OncePerRequestFilter {
     public static final String TIMESTAMP_ATTRIBUTE_NAME = TimestampRequestFilter.class.getName() + ".timestamp";
     public static final String TIMESTAMP_MDC_KEY = "requestTimestamp";
-    protected static final DateTimeFormatter DEFAULT_FORMATTER = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
-    private final DateTimeFormatter formatter;
-    private final Clock clock;
+    public static final DateTimeFormatter DEFAULT_FORMATTER = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
+    @NonNull
+    protected final Clock clock;
+    @NonNull
+    protected final DateTimeFormatter formatter;
 
     public TimestampRequestFilter() {
         this(Clock.systemUTC(), DEFAULT_FORMATTER);
     }
 
-    public TimestampRequestFilter(Clock clock, DateTimeFormatter formatter) {
-        this.clock = clock;
-        this.formatter = formatter;
+    public TimestampRequestFilter(Clock clock) {
+        this(clock, DEFAULT_FORMATTER);
     }
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request,
-                                    HttpServletResponse response,
-                                    FilterChain filterChain) throws ServletException, IOException {
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+            throws ServletException, IOException {
         var timestamp = createTimestamp();
         request.setAttribute(TIMESTAMP_ATTRIBUTE_NAME, timestamp);
         try (var mdcCloseable = MDC.putCloseable(TIMESTAMP_MDC_KEY, timestamp)) {

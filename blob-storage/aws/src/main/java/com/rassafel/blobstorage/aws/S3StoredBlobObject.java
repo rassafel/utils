@@ -16,23 +16,25 @@
 
 package com.rassafel.blobstorage.aws;
 
-import com.rassafel.blobstorage.core.StoredBlobObject;
-import com.rassafel.blobstorage.core.query.StoreBlobRequest;
-import com.rassafel.blobstorage.core.support.DefaultBlobObject;
+import java.io.InputStream;
+
+import lombok.NonNull;
 import org.springframework.util.Assert;
 import software.amazon.awssdk.core.sync.ResponseTransformer;
 import software.amazon.awssdk.services.s3.S3Client;
 
-import java.io.InputStream;
+import com.rassafel.blobstorage.core.StoredBlobObject;
+import com.rassafel.blobstorage.core.query.StoreBlobRequest;
+import com.rassafel.blobstorage.core.support.DefaultBlobObject;
 
 public class S3StoredBlobObject extends DefaultBlobObject implements StoredBlobObject {
+    @NonNull
     private final String bucket;
+    @NonNull
     private final S3Client s3Client;
 
     protected S3StoredBlobObject(AbstractBuilder<?, ?> builder) {
         super(builder);
-        Assert.notNull(builder.s3Client, "s3 client cannot be null");
-        Assert.notNull(builder.bucket, "bucket cannot be null");
         Assert.notNull(this.getStoredRef(), "ref cannot be null");
         s3Client = builder.s3Client;
         bucket = builder.bucket;
@@ -49,23 +51,23 @@ public class S3StoredBlobObject extends DefaultBlobObject implements StoredBlobO
     @Override
     public InputStream toInputStream() {
         return s3Client.getObject(builder -> builder
-            .bucket(bucket)
-            .key(getStoredRef()), ResponseTransformer.toInputStream());
+                .bucket(bucket)
+                .key(getStoredRef()), ResponseTransformer.toInputStream());
     }
 
     public Builder<?, ?> toBuilder() {
         return new BuilderImpl(this);
     }
 
-    public interface Builder<O extends S3StoredBlobObject, B extends Builder<O, B>> extends DefaultBlobObject.Builder<O, B> {
+    public interface Builder<O extends S3StoredBlobObject, B extends Builder<O, B>>
+            extends DefaultBlobObject.Builder<O, B> {
         B bucket(String bucket);
 
         B s3Client(S3Client s3Client);
     }
 
-    protected static abstract class AbstractBuilder<O extends S3StoredBlobObject, B extends Builder<O, B>>
-        extends DefaultBlobObject.AbstractBuilder<O, B>
-        implements Builder<O, B> {
+    protected abstract static class AbstractBuilder<O extends S3StoredBlobObject, B extends Builder<O, B>>
+            extends DefaultBlobObject.AbstractBuilder<O, B> implements Builder<O, B> {
         protected String bucket;
         protected S3Client s3Client;
 
@@ -97,25 +99,25 @@ public class S3StoredBlobObject extends DefaultBlobObject implements StoredBlobO
     }
 
     protected static class BuilderImpl extends AbstractBuilder<S3StoredBlobObject, BuilderImpl> {
-        public BuilderImpl() {
+        protected BuilderImpl() {
         }
 
-        public BuilderImpl(S3StoredBlobObject blob) {
+        protected BuilderImpl(S3StoredBlobObject blob) {
             super(blob);
         }
 
-        public BuilderImpl(StoreBlobRequest request) {
+        protected BuilderImpl(StoreBlobRequest request) {
             super(request);
-        }
-
-        @Override
-        public S3StoredBlobObject build() {
-            return new S3StoredBlobObject(this);
         }
 
         @Override
         protected BuilderImpl self() {
             return this;
+        }
+
+        @Override
+        public S3StoredBlobObject build() {
+            return new S3StoredBlobObject(this);
         }
     }
 }

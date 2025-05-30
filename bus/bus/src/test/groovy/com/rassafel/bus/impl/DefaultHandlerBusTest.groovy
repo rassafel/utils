@@ -16,8 +16,9 @@
 
 package com.rassafel.bus.impl
 
-import com.rassafel.bus.*
 import spock.lang.Specification
+
+import com.rassafel.bus.*
 
 class DefaultHandlerBusTest extends Specification {
     def registry = Mock(HandlerRegistry)

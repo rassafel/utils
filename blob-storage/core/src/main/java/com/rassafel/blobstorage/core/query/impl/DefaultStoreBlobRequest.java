@@ -16,26 +16,27 @@
 
 package com.rassafel.blobstorage.core.query.impl;
 
-import com.rassafel.blobstorage.core.StoredBlobObject;
-import com.rassafel.blobstorage.core.query.StoreBlobRequest;
+import java.util.LinkedHashMap;
+import java.util.Map;
+
 import lombok.Getter;
 import org.springframework.lang.Nullable;
 import org.springframework.util.LinkedCaseInsensitiveMap;
 
-import java.util.Map;
+import com.rassafel.blobstorage.core.StoredBlobObject;
+import com.rassafel.blobstorage.core.query.StoreBlobRequest;
 
 @Getter
 public class DefaultStoreBlobRequest implements StoreBlobRequest {
     private final String originalName;
     private final String contentType;
     private final Long size;
-    private final Map<String, String> attributes;
+    private final Map<String, String> attributes = new LinkedCaseInsensitiveMap<>(1);
 
     protected DefaultStoreBlobRequest(BuilderImpl builder) {
         this.originalName = builder.originalName;
         this.contentType = builder.contentType;
         this.size = builder.size;
-        this.attributes = new LinkedCaseInsensitiveMap<>(builder.attributes.size());
         this.attributes.putAll(builder.attributes);
     }
 
@@ -52,19 +53,21 @@ public class DefaultStoreBlobRequest implements StoreBlobRequest {
         return new BuilderImpl(this);
     }
 
-    public interface Builder<O extends DefaultStoreBlobRequest, B extends Builder<O, B>> extends StoreBlobRequest.Builder<O, B> {
+    public interface Builder<O extends DefaultStoreBlobRequest, B extends Builder<O, B>>
+            extends StoreBlobRequest.Builder<O, B> {
     }
 
-    protected abstract static class AbstractBuilder<O extends DefaultStoreBlobRequest, B extends Builder<O, B>> implements Builder<O, B> {
+    protected abstract static class AbstractBuilder<O extends DefaultStoreBlobRequest, B extends Builder<O, B>>
+            implements Builder<O, B> {
         protected String originalName;
 
         protected String contentType;
 
         protected Long size;
 
-        protected Map<String, String> attributes = new LinkedCaseInsensitiveMap<>();
+        protected Map<String, String> attributes = new LinkedHashMap<>(1);
 
-        public AbstractBuilder() {
+        protected AbstractBuilder() {
         }
 
         protected AbstractBuilder(StoreBlobRequest request) {

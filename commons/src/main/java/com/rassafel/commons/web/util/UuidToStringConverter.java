@@ -16,9 +16,11 @@
 
 package com.rassafel.commons.web.util;
 
-
 import java.util.UUID;
 import java.util.function.Function;
 
+/**
+ * Converts UUID to string.
+ */
 public interface UuidToStringConverter extends Function<UUID, String> {
 }

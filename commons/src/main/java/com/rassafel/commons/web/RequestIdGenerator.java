@@ -16,17 +16,33 @@
 
 package com.rassafel.commons.web;
 
-import com.rassafel.commons.web.util.UuidToStringConverter;
-
 import java.util.UUID;
 import java.util.function.Supplier;
 
+import com.rassafel.commons.web.util.UuidToStringConverter;
+
+/**
+ * Generates a request ID.
+ */
 @FunctionalInterface
 public interface RequestIdGenerator extends Supplier<String> {
+    /**
+     * Generates a request ID.
+     *
+     * @param converter the UUID to string converter
+     * @return the request ID
+     */
     static RequestIdGenerator uuidGen(UuidToStringConverter converter) {
         return uuidGen(UUID::randomUUID, converter);
     }
 
+    /**
+     * Generates a request ID.
+     *
+     * @param generator the UUID generator
+     * @param converter the UUID to string converter
+     * @return the request ID
+     */
     static RequestIdGenerator uuidGen(Supplier<UUID> generator, UuidToStringConverter converter) {
         return () -> converter.apply(generator.get());
     }

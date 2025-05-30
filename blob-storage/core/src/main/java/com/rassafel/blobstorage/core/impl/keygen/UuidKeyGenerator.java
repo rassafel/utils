@@ -16,14 +16,17 @@
 
 package com.rassafel.blobstorage.core.impl.keygen;
 
-import com.rassafel.blobstorage.core.impl.KeyGenerator;
+import java.util.UUID;
+
+import lombok.RequiredArgsConstructor;
 import org.springframework.lang.Nullable;
 
-import java.util.UUID;
+import com.rassafel.blobstorage.core.impl.KeyGenerator;
 
 /**
  * The UUID based key generator. Ignores source name
  */
+@RequiredArgsConstructor
 public class UuidKeyGenerator implements KeyGenerator {
     @Override
     public String createKey(@Nullable String name) {

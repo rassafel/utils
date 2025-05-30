@@ -16,9 +16,10 @@
 
 package com.rassafel.blobstorage.core.impl
 
-import com.rassafel.blobstorage.core.BlobStorage
 import spock.lang.Shared
 import spock.lang.Specification
+
+import com.rassafel.blobstorage.core.BlobStorage
 
 class DefaultBlobStorageLocatorTest extends Specification {
     @Shared
@@ -30,9 +31,9 @@ class DefaultBlobStorageLocatorTest extends Specification {
 
     @Shared
     DefaultBlobStorageLocator locator = new DefaultBlobStorageLocator("default", [
-        "default" : defaultStorage,
-        "storage1": storage1,
-        "storage2": storage2,
+            "default" : defaultStorage,
+            "storage1": storage1,
+            "storage2": storage2,
     ])
 
 
@@ -43,7 +44,7 @@ class DefaultBlobStorageLocatorTest extends Specification {
         then:
         with(storage) {
             it instanceof DefaultBlobStorageLocator.BlobStorageWrapper &&
-                it.getDelegate().is(defaultStorage)
+                    it.getDelegate().is(defaultStorage)
         }
     }
 
@@ -54,7 +55,7 @@ class DefaultBlobStorageLocatorTest extends Specification {
         then:
         with(storage) {
             it instanceof DefaultBlobStorageLocator.BlobStorageWrapper &&
-                it.getDelegate().is(defaultStorage)
+                    it.getDelegate().is(defaultStorage)
         }
 
         where:
@@ -88,4 +89,3 @@ class DefaultBlobStorageLocatorTest extends Specification {
         overrideStorage << [null, defaultStorage, storage1]
     }
 }
-

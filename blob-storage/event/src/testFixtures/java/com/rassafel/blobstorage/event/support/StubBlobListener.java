@@ -16,12 +16,13 @@
 
 package com.rassafel.blobstorage.event.support;
 
-import com.rassafel.blobstorage.event.BlobEvent;
-import com.rassafel.blobstorage.event.BlobListener;
-import lombok.Getter;
-
 import java.util.ArrayList;
 import java.util.List;
+
+import lombok.Getter;
+
+import com.rassafel.blobstorage.event.BlobEvent;
+import com.rassafel.blobstorage.event.BlobListener;
 
 @Getter
 public class StubBlobListener<T extends BlobEvent> implements BlobListener<T> {

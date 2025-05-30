@@ -16,13 +16,14 @@
 
 package com.rassafel.blobstorage.core.impl
 
-import com.rassafel.blobstorage.test.TestStoredBlobObject
+import spock.lang.Specification
+
 import com.rassafel.blobstorage.core.BlobStorage
 import com.rassafel.blobstorage.core.query.impl.DefaultStoreBlobRequest
 import com.rassafel.blobstorage.core.query.impl.DefaultStoreBlobResponse
 import com.rassafel.blobstorage.core.query.impl.DefaultUpdateAttributesRequest
 import com.rassafel.blobstorage.core.query.impl.DefaultUpdateAttributesResponse
-import spock.lang.Specification
+import com.rassafel.blobstorage.test.TestStoredBlobObject
 
 import static com.rassafel.blobstorage.BlobStorageTestUtils.toInputStream
 
@@ -32,9 +33,9 @@ class DefaultBlobStorageLocatorBlobStorageTest extends Specification {
     BlobStorage storage2 = Mock()
 
     DefaultBlobStorageLocator locator = new DefaultBlobStorageLocator("default", [
-        "default" : defaultStorage,
-        "storage1": storage1,
-        "storage2": storage2,
+            "default" : defaultStorage,
+            "storage1": storage1,
+            "storage2": storage2,
     ])
 
     def ref = "/static/test"
@@ -42,17 +43,17 @@ class DefaultBlobStorageLocatorBlobStorageTest extends Specification {
     def storage1Ref = "storage1${DefaultBlobStorageLocator.DEFAULT_DELIMITER}$ref"
 
     TestStoredBlobObject defaultBlobObject = TestStoredBlobObject.builder()
-        .originalName("test.txt")
-        .attribute("X-Meta", "Value1")
-        .contentType("text/plain")
-        .storedRef(ref)
-        .build()
+            .originalName("test.txt")
+            .attribute("X-Meta", "Value1")
+            .contentType("text/plain")
+            .storedRef(ref)
+            .build()
 
 //region store test
     def storeRequest = DefaultStoreBlobRequest.builder()
-        .originalName("test.txt")
-        .attribute("X-Meta", "Value1")
-        .build()
+            .originalName("test.txt")
+            .attribute("X-Meta", "Value1")
+            .build()
 
     def "get default store"() {
         when:
@@ -113,8 +114,8 @@ class DefaultBlobStorageLocatorBlobStorageTest extends Specification {
 //endregion
 //region update test
     def updateRequest = DefaultUpdateAttributesRequest.builder()
-        .attribute("X-Test", "Value")
-        .build()
+            .attribute("X-Test", "Value")
+            .build()
 
     def "get default update"() {
         when:

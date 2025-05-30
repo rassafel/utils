@@ -16,38 +16,48 @@
 
 package com.rassafel.commons.web;
 
-import com.rassafel.commons.web.util.UuidToBase36StringConverter;
+import java.io.IOException;
+
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.slf4j.MDC;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import java.io.IOException;
+import com.rassafel.commons.web.util.UuidToBase36StringConverter;
 
+/**
+ * A filter that generates a request ID and adds it to the MDC (Mapped Diagnostic Context).
+ * The request ID is then available in the MDC for logging purposes.
+ */
+@RequiredArgsConstructor
 public class RequestIdRequestFilter extends OncePerRequestFilter {
     public static final String REQUEST_ID_ATTRIBUTE_NAME = RequestIdRequestFilter.class.getName() + ".requestId";
-    public static final String REQUEST_ID_HEADER = "X-Request-Id";
     public static final String REQUEST_ID_MDC_KEY = "requestId";
-    private static final RequestIdGenerator DEFAULT_GENERATOR = RequestIdGenerator.uuidGen(new UuidToBase36StringConverter());
-    private final RequestIdGenerator generator;
+    public static final String DEFAULT_REQUEST_ID_HEADER = "X-Request-Id";
+    public static final RequestIdGenerator DEFAULT_GENERATOR = RequestIdGenerator.uuidGen(new UuidToBase36StringConverter());
+    @NonNull
+    protected final RequestIdGenerator generator;
+    @NonNull
+    protected final String requestIdHeader;
 
     public RequestIdRequestFilter() {
-        this(DEFAULT_GENERATOR);
+        this(DEFAULT_GENERATOR, DEFAULT_REQUEST_ID_HEADER);
     }
 
     public RequestIdRequestFilter(RequestIdGenerator generator) {
-        this.generator = generator;
+        this(generator, DEFAULT_REQUEST_ID_HEADER);
     }
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request,
-                                    HttpServletResponse response,
-                                    FilterChain filterChain) throws ServletException, IOException {
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+            throws ServletException, IOException {
         var requestId = generateRequestId();
         request.setAttribute(REQUEST_ID_ATTRIBUTE_NAME, requestId);
-        response.addHeader(REQUEST_ID_HEADER, requestId);
+        response.addHeader(requestIdHeader, requestId);
         try (var mdcCloseable = MDC.putCloseable(REQUEST_ID_MDC_KEY, requestId)) {
             filterChain.doFilter(request, response);
         }

@@ -16,16 +16,6 @@
 
 package com.rassafel.blobstorage.core.util;
 
-import com.rassafel.blobstorage.core.StoredBlobObject;
-import lombok.experimental.UtilityClass;
-import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.BooleanUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.core.io.InputStreamResource;
-import org.springframework.core.io.Resource;
-import org.springframework.http.*;
-import org.springframework.web.multipart.MultipartFile;
-
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -37,6 +27,21 @@ import java.util.function.Predicate;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
+import lombok.experimental.UtilityClass;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.BooleanUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import com.rassafel.blobstorage.core.StoredBlobObject;
+
+/**
+ * Utility class for web operations related to blobs.
+ * This class provides methods for transforming blob objects to HTTP responses.
+ */
 @UtilityClass
 @Slf4j
 public class BlobWebUtils {
@@ -48,9 +53,8 @@ public class BlobWebUtils {
      * @param attachment if true return as attachment, else inline
      * @return response resource
      */
-    public static ResponseEntity<Resource> toResponseEntity(StoredBlobObject blobObject,
-                                                            HttpStatus status,
-                                                            Boolean attachment) throws IOException {
+    public static ResponseEntity<Resource> toResponseEntity(
+            StoredBlobObject blobObject, HttpStatus status, Boolean attachment) throws IOException {
         return toResponseEntity(blobObject, status, attachment, headers -> {
         });
     }
@@ -74,12 +78,12 @@ public class BlobWebUtils {
      * @param attributeFilter attribute filter
      * @return headers customizer
      */
-    public static Consumer<HttpHeaders> capitalizeCustomHeaders(StoredBlobObject blobObject, String prefix, Predicate<String> attributeFilter) {
-        return headers -> capitalizeKeys(blobObject.getAttributes())
-            .forEach((k, v) -> {
-                if (!attributeFilter.test(k)) return;
-                headers.add(prefix + k, v);
-            });
+    public static Consumer<HttpHeaders> capitalizeCustomHeaders(
+            StoredBlobObject blobObject, String prefix, Predicate<String> attributeFilter) {
+        return headers -> capitalizeKeys(blobObject.getAttributes()).forEach((k, v) -> {
+            if (!attributeFilter.test(k)) return;
+            headers.add(prefix + k, v);
+        });
     }
 
     /**
@@ -91,10 +95,9 @@ public class BlobWebUtils {
      * @param headersMutator headers mutator
      * @return response resource
      */
-    public static ResponseEntity<Resource> toResponseEntity(StoredBlobObject blobObject,
-                                                            HttpStatus status,
-                                                            Boolean attachment,
-                                                            Consumer<HttpHeaders> headersMutator) throws IOException {
+    public static ResponseEntity<Resource> toResponseEntity(
+            StoredBlobObject blobObject, HttpStatus status, Boolean attachment, Consumer<HttpHeaders> headersMutator)
+            throws IOException {
         var inputStream = blobObject.toInputStream();
         if (inputStream == null) {
             log.debug("Input stream is null, replace with empty stream");
@@ -102,12 +105,12 @@ public class BlobWebUtils {
         }
         var resource = new InputStreamResource(inputStream);
         return ResponseEntity.status(status)
-            .contentType(MediaType.valueOf(blobObject.getContentType()))
-            .contentLength(blobObject.getSize())
-            .lastModified(blobObject.getLastModifiedAt().toInstant(ZoneOffset.UTC))
-            .headers(headers -> headers.setContentDisposition(contentDisposition(blobObject, attachment)))
-            .headers(headersMutator)
-            .body(resource);
+                .contentType(MediaType.valueOf(blobObject.getContentType()))
+                .contentLength(blobObject.getSize())
+                .lastModified(blobObject.getLastModifiedAt().toInstant(ZoneOffset.UTC))
+                .headers(headers -> headers.setContentDisposition(contentDisposition(blobObject, attachment)))
+                .headers(headersMutator)
+                .body(resource);
     }
 
     /**
@@ -119,9 +122,9 @@ public class BlobWebUtils {
      */
     private static ContentDisposition contentDisposition(StoredBlobObject blobObject, Boolean attachment) {
         var builder = BooleanUtils.isTrue(attachment) ?
-            ContentDisposition.attachment() : ContentDisposition.inline();
+                ContentDisposition.attachment() : ContentDisposition.inline();
         return builder.filename(blobObject.getOriginalName(), StandardCharsets.UTF_8)
-            .build();
+                .build();
     }
 
     /**
@@ -139,20 +142,22 @@ public class BlobWebUtils {
     /**
      * Capitalize string
      * <p>
-     * Test-Value-id -> Test-Value-Id
-     * test-value-id -> Test-Value-Id
-     * test-Value-id -> Test-Value-Id
-     * test--value-id -> Test--Value-Id
-     * test-valueId -> Test-ValueId
-     * test -> Test
+     * <ul>
+     *     <li>Test-Value-id -> Test-Value-Id</li>
+     *     <li>test-value-id -> Test-Value-Id</li>
+     *     <li>test-Value-id -> Test-Value-Id</li>
+     *     <li>test--value-id -> Test--Value-Id</li>
+     *     <li>test-valueId -> Test-ValueId</li>
+     *     <li>test -> Test</li>
+     * </ul>
      *
      * @param value string to capitalize
      * @return capitalized string
      */
     public static String capitalize(String value) {
         return Pattern.compile("(?<=-)[a-z]")
-            .matcher(StringUtils.capitalize(value))
-            .replaceAll(m -> m.group().toUpperCase());
+                .matcher(StringUtils.capitalize(value))
+                .replaceAll(m -> m.group().toUpperCase());
     }
 
     /**
@@ -173,12 +178,12 @@ public class BlobWebUtils {
         }
         var actualType = MediaType.parseMediaType(file.getContentType());
         var matchedType = Stream.concat(Stream.of(expectedType), Stream.of(expectedTypes))
-            .filter(actualType::isCompatibleWith)
-            .findFirst()
-            .orElseThrow(() -> {
-                log.debug("Mismatch content type, expected: '{}', actual: {}", expectedType, actualType);
-                return new IllegalArgumentException("mismatch content type");
-            });
+                .filter(actualType::isCompatibleWith)
+                .findFirst()
+                .orElseThrow(() -> {
+                    log.debug("Mismatch content type, expected: '{}', actual: {}", expectedType, actualType);
+                    return new IllegalArgumentException("mismatch content type");
+                });
         log.debug("Matched content type: {}", matchedType);
     }
 }

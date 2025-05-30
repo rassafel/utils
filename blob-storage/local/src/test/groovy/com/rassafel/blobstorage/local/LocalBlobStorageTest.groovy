@@ -16,14 +16,15 @@
 
 package com.rassafel.blobstorage.local
 
-import com.rassafel.blobstorage.BlobStorageSpecification
-import com.rassafel.blobstorage.core.BlobStorage
+import java.nio.file.Files
+
 import spock.lang.Shared
 import spock.lang.Stepwise
 import spock.lang.TempDir
 import spock.util.io.FileSystemFixture
 
-import java.nio.file.Files
+import com.rassafel.blobstorage.BlobStorageSpecification
+import com.rassafel.blobstorage.core.BlobStorage
 
 @Stepwise
 class LocalBlobStorageTest extends BlobStorageSpecification {
@@ -40,7 +41,7 @@ class LocalBlobStorageTest extends BlobStorageSpecification {
             }
         }
         this.storage = new LocalBlobStorage(keyGen, fileSystemFixture.resolve("storagePath").toString(),
-            "document", "metadata", clock)
+                "document", "metadata", clock)
     }
 
     @Override

@@ -16,32 +16,6 @@
 
 package com.rassafel.blobstorage.aws;
 
-import com.rassafel.blobstorage.core.BlobStorage;
-import com.rassafel.blobstorage.core.NotFoundBlobException;
-import com.rassafel.blobstorage.core.StoreBlobException;
-import com.rassafel.blobstorage.core.StoredBlobObject;
-import com.rassafel.blobstorage.core.impl.KeyGenerator;
-import com.rassafel.blobstorage.core.query.StoreBlobRequest;
-import com.rassafel.blobstorage.core.query.StoreBlobResponse;
-import com.rassafel.blobstorage.core.query.UpdateAttributesRequest;
-import com.rassafel.blobstorage.core.query.UpdateAttributesResponse;
-import com.rassafel.blobstorage.core.query.impl.DefaultStoreBlobResponse;
-import com.rassafel.blobstorage.core.query.impl.DefaultUpdateAttributesResponse;
-import com.rassafel.blobstorage.core.util.FileTypeUtils;
-import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.lang.Nullable;
-import org.springframework.util.Assert;
-import org.springframework.util.LinkedCaseInsensitiveMap;
-import org.springframework.util.unit.DataSize;
-import software.amazon.awssdk.core.exception.SdkException;
-import software.amazon.awssdk.core.internal.util.Mimetype;
-import software.amazon.awssdk.core.sync.RequestBody;
-import software.amazon.awssdk.services.s3.S3Client;
-import software.amazon.awssdk.services.s3.model.*;
-
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -54,39 +28,78 @@ import java.util.Arrays;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.lang.Nullable;
+import org.springframework.util.Assert;
+import org.springframework.util.LinkedCaseInsensitiveMap;
+import org.springframework.util.unit.DataSize;
+import software.amazon.awssdk.core.exception.SdkException;
+import software.amazon.awssdk.core.internal.util.Mimetype;
+import software.amazon.awssdk.core.sync.RequestBody;
+import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.*;
+
+import com.rassafel.blobstorage.core.BlobStorage;
+import com.rassafel.blobstorage.core.NotFoundBlobException;
+import com.rassafel.blobstorage.core.StoreBlobException;
+import com.rassafel.blobstorage.core.StoredBlobObject;
+import com.rassafel.blobstorage.core.impl.KeyGenerator;
+import com.rassafel.blobstorage.core.query.StoreBlobRequest;
+import com.rassafel.blobstorage.core.query.StoreBlobResponse;
+import com.rassafel.blobstorage.core.query.UpdateAttributesRequest;
+import com.rassafel.blobstorage.core.query.UpdateAttributesResponse;
+import com.rassafel.blobstorage.core.query.impl.DefaultStoreBlobResponse;
+import com.rassafel.blobstorage.core.query.impl.DefaultUpdateAttributesResponse;
+import com.rassafel.blobstorage.core.util.FileTypeUtils;
+
+/**
+ * S3BlobStorage class implements the BlobStorage interface using AWS S3 as the storage backend.
+ */
+@Slf4j
 public class S3BlobStorage implements BlobStorage {
-    protected static final Logger log = LoggerFactory.getLogger(S3BlobStorage.class);
     protected static final String CORE_DATA_PREFIX = "";
     protected static final String METADATA_PREFIX = CORE_DATA_PREFIX + "Meta-";
     protected static final String ORIGINAL_NAME_ATTRIBUTE = "Original-Name";
     protected static final String UPLOADED_AT_ATTRIBUTE = "Uploaded-At";
     protected static final String LAST_MODIFIED_AT_ATTRIBUTE = "Last-Modified-At";
     protected static final DateTimeFormatter TIME_FORMATTER = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
+    @NonNull
     protected final KeyGenerator keyGenerator;
+    @NonNull
     protected final String coreDataPrefix;
+    @NonNull
     protected final String metadataPrefix;
+    @NonNull
     protected final DataSize chunkSize;
+    @NonNull
     protected final String bucket;
+    @NonNull
     protected final S3ClientProvider s3ClientProvider;
+    @NonNull
     protected final Clock clock;
 
-    public S3BlobStorage(DataSize chunkSize,
-                         String bucket, S3ClientProvider s3ClientProvider,
-                         Clock clock, KeyGenerator keyGenerator) {
+    public S3BlobStorage(
+            DataSize chunkSize,
+            String bucket,
+            S3ClientProvider s3ClientProvider,
+            Clock clock,
+            KeyGenerator keyGenerator) {
         this(chunkSize, bucket, s3ClientProvider, clock, CORE_DATA_PREFIX, METADATA_PREFIX, keyGenerator);
     }
 
-    public S3BlobStorage(DataSize chunkSize,
-                         String bucket, S3ClientProvider s3ClientProvider,
-                         Clock clock, String coreDataPrefix, String metadataPrefix,
-                         KeyGenerator keyGenerator) {
-        Assert.notNull(keyGenerator, "keyGenerator must not be null");
-        Assert.notNull(coreDataPrefix, "coreDataPrefix must not be null");
-        Assert.notNull(metadataPrefix, "metadataPrefix must not be null");
+    public S3BlobStorage(
+            DataSize chunkSize,
+            String bucket,
+            S3ClientProvider s3ClientProvider,
+            Clock clock,
+            String coreDataPrefix,
+            String metadataPrefix,
+            KeyGenerator keyGenerator) {
         Assert.isTrue(chunkSize.toBytes() > 0, "chunkSize must be greater then 0 bytes");
         Assert.hasText(bucket, "bucket must not be empty");
-        Assert.notNull(s3ClientProvider, "s3ClientProvider must not be null");
-        Assert.notNull(clock, "clock must not be null");
         this.keyGenerator = keyGenerator;
         this.coreDataPrefix = coreDataPrefix;
         this.metadataPrefix = metadataPrefix;
@@ -127,62 +140,62 @@ public class S3BlobStorage implements BlobStorage {
         var s3Client = getClient();
         var bucket = this.bucket;
         var storedBlobBuilder = fromRequest(request)
-            .s3Client(s3Client)
-            .bucket(bucket)
-            .storedRef(blobKey);
+                .s3Client(s3Client)
+                .bucket(bucket)
+                .storedRef(blobKey);
         var metadata = objectToMetadata(storedBlobBuilder.build());
 
         try (var bis = new BufferedInputStream(inputStream, chunkSize)) {
             var buffer = new byte[chunkSize];
-            int nBytes = bis.read(buffer);
+            var nBytes = bis.read(buffer);
             if (nBytes < chunkSize) {
-                s3Client.putObject(objectBuilder -> objectBuilder
-                    .bucket(bucket)
-                    .key(blobKey)
-                    .contentType(request.getContentType())
-                    .metadata(metadata)
-                    .build(), fromBytes(buffer, nBytes));
+                s3Client.putObject(
+                        objectBuilder -> objectBuilder
+                                .bucket(bucket)
+                                .key(blobKey)
+                                .contentType(request.getContentType())
+                                .metadata(metadata)
+                                .build(),
+                        fromBytes(buffer, nBytes));
                 var blob = storedBlobBuilder.size(nBytes).build();
                 log.debug("The uploading is stored, bucket: {}; key: {}; original name: {}",
-                    bucket, blobKey, blob.getOriginalName());
+                        bucket, blobKey, blob.getOriginalName());
                 return DefaultStoreBlobResponse.of(blob);
             }
 
             var response = s3Client.createMultipartUpload(uploadBuilder -> uploadBuilder
-                .bucket(bucket)
-                .key(blobKey)
-                .contentType(request.getContentType())
-                .metadata(metadata));
+                    .bucket(bucket)
+                    .key(blobKey)
+                    .contentType(request.getContentType())
+                    .metadata(metadata));
 
             var completedParts = new ArrayList<CompletedPart>();
             long readBytes = nBytes;
             var partBuilder = UploadPartRequest.builder()
-                .bucket(bucket)
-                .key(blobKey)
-                .uploadId(response.uploadId());
-            for (int partNumber = 1; 0 < nBytes; partNumber++) {
-                var partResponse = s3Client.uploadPart(partBuilder
-                    .partNumber(partNumber)
-                    .build(), fromBytes(buffer, nBytes));
+                    .bucket(bucket)
+                    .key(blobKey)
+                    .uploadId(response.uploadId());
+            for (var partNumber = 1; 0 < nBytes; partNumber++) {
+                var partResponse = s3Client.uploadPart(
+                        partBuilder.partNumber(partNumber).build(),
+                        fromBytes(buffer, nBytes));
                 var completedPart = CompletedPart.builder()
-                    .partNumber(partNumber)
-                    .eTag(partResponse.eTag())
-                    .build();
+                        .partNumber(partNumber)
+                        .eTag(partResponse.eTag())
+                        .build();
                 readBytes += nBytes;
                 completedParts.add(completedPart);
                 nBytes = bis.read(buffer);
             }
 
             s3Client.completeMultipartUpload(completeBuilder -> completeBuilder
-                .bucket(bucket)
-                .key(blobKey)
-                .uploadId(response.uploadId())
-                .multipartUpload(multipartBuilder -> multipartBuilder.parts(completedParts)));
-            var blob = storedBlobBuilder
-                .size(readBytes)
-                .build();
+                    .bucket(bucket)
+                    .key(blobKey)
+                    .uploadId(response.uploadId())
+                    .multipartUpload(multipartBuilder -> multipartBuilder.parts(completedParts)));
+            var blob = storedBlobBuilder.size(readBytes).build();
             log.debug("The uploading is stored, bucket: {}; key: {}; original name: {}",
-                bucket, blobKey, blob.getOriginalName());
+                    bucket, blobKey, blob.getOriginalName());
             return DefaultStoreBlobResponse.of(blob);
         } catch (IOException | SdkException ex) {
             log.error("Error saving file to S3 storage", ex);
@@ -193,8 +206,8 @@ public class S3BlobStorage implements BlobStorage {
     protected S3StoredBlobObject.Builder<?, ?> fromRequest(StoreBlobRequest request) {
         var now = LocalDateTime.now(clock);
         return S3StoredBlobObject.builder(request)
-            .uploadedAt(now)
-            .lastModifiedAt(now);
+                .uploadedAt(now)
+                .lastModifiedAt(now);
     }
 
     protected Map<String, String> objectToMetadata(StoredBlobObject object) {
@@ -211,8 +224,8 @@ public class S3BlobStorage implements BlobStorage {
     protected Map<String, String> toStoreMetadata(Map<String, String> source) {
         var metadataPrefix = this.metadataPrefix;
         return source.entrySet().stream()
-            .filter(e -> StringUtils.isNotBlank(e.getValue()))
-            .collect(Collectors.toMap(e -> metadataPrefix + e.getKey(), Map.Entry::getValue));
+                .filter(e -> StringUtils.isNotBlank(e.getValue()))
+                .collect(Collectors.toMap(e -> metadataPrefix + e.getKey(), Map.Entry::getValue));
     }
 
     private RequestBody fromBytes(byte[] buffer, int length) {
@@ -226,11 +239,11 @@ public class S3BlobStorage implements BlobStorage {
         var s3Client = getClient();
         try {
             var response = s3Client.listObjectsV2(b -> b
-                .bucket(bucket)
-                .prefix(ref)
-                .maxKeys(1));
+                    .bucket(bucket)
+                    .prefix(ref)
+                    .maxKeys(1));
             return response.contents().stream()
-                .anyMatch(e -> ref.equals(e.key()));
+                    .anyMatch(e -> ref.equals(e.key()));
         } catch (NoSuchKeyException ignore) {
         } catch (SdkException ex) {
             log.error("Error find blob from S3 storage", ex);
@@ -248,8 +261,8 @@ public class S3BlobStorage implements BlobStorage {
         GetObjectResponse response = null;
         try {
             response = s3Client.getObject(builder -> builder
-                .bucket(bucket)
-                .key(ref)).response();
+                    .bucket(bucket)
+                    .key(ref)).response();
         } catch (NoSuchKeyException ignore) {
         } catch (SdkException ex) {
             log.error("Error loading blob from S3 storage", ex);
@@ -264,31 +277,31 @@ public class S3BlobStorage implements BlobStorage {
         var metadata = new LinkedCaseInsensitiveMap<String>(response.metadata().size());
         metadata.putAll(response.metadata());
         return metadataToObject(metadata)
-            .s3Client(s3Client)
-            .bucket(bucket)
-            .storedRef(ref)
-            .contentType(response.contentType())
-            .size(response.contentLength())
-            .build();
+                .s3Client(s3Client)
+                .bucket(bucket)
+                .storedRef(ref)
+                .contentType(response.contentType())
+                .size(response.contentLength())
+                .build();
     }
 
     protected S3StoredBlobObject.Builder<?, ?> metadataToObject(Map<String, String> metadata) {
         var coreDataPrefix = this.coreDataPrefix;
         var metadataPrefix = this.metadataPrefix;
         var builder = S3StoredBlobObject.builder()
-            .originalName(metadata.get(coreDataPrefix + ORIGINAL_NAME_ATTRIBUTE))
-            .uploadedAt(LocalDateTime.from(TIME_FORMATTER.parse(metadata.get(coreDataPrefix + UPLOADED_AT_ATTRIBUTE))))
-            .lastModifiedAt(LocalDateTime.from(TIME_FORMATTER.parse(metadata.get(coreDataPrefix + LAST_MODIFIED_AT_ATTRIBUTE))));
+                .originalName(metadata.get(coreDataPrefix + ORIGINAL_NAME_ATTRIBUTE))
+                .uploadedAt(LocalDateTime.from(TIME_FORMATTER.parse(metadata.get(coreDataPrefix + UPLOADED_AT_ATTRIBUTE))))
+                .lastModifiedAt(LocalDateTime.from(TIME_FORMATTER.parse(metadata.get(coreDataPrefix + LAST_MODIFIED_AT_ATTRIBUTE))));
         var metadataPrefixLength = metadataPrefix.length();
 
         metadata.entrySet().stream()
-            .filter(e -> StringUtils.startsWithIgnoreCase(e.getKey(), metadataPrefix))
-            .forEach(entry -> {
-                var key = entry.getKey();
-                key = key.substring(metadataPrefixLength);
-                var value = entry.getValue();
-                builder.attribute(key, value);
-            });
+                .filter(e -> StringUtils.startsWithIgnoreCase(e.getKey(), metadataPrefix))
+                .forEach(entry -> {
+                    var key = entry.getKey();
+                    key = key.substring(metadataPrefixLength);
+                    var value = entry.getValue();
+                    builder.attribute(key, value);
+                });
 
         return builder;
     }
@@ -298,9 +311,7 @@ public class S3BlobStorage implements BlobStorage {
         var s3Client = getClient();
         if (!existsByRef(ref)) return false;
         try {
-            var response = s3Client.deleteObject(b -> b
-                .bucket(bucket)
-                .key(ref));
+            s3Client.deleteObject(b -> b.bucket(bucket).key(ref));
             return true;
         } catch (SdkException ex) {
             log.error("Error delete blob from S3 storage", ex);
@@ -326,17 +337,17 @@ public class S3BlobStorage implements BlobStorage {
         }
         metadata.put(coreDataPrefix + LAST_MODIFIED_AT_ATTRIBUTE, TIME_FORMATTER.format(now));
         var resultMetadata = metadata.entrySet().stream()
-            .filter(e -> StringUtils.isNotBlank(e.getKey()))
-            .filter(e -> StringUtils.isNotBlank(e.getValue()))
-            .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+                .filter(e -> StringUtils.isNotBlank(e.getKey()))
+                .filter(e -> StringUtils.isNotBlank(e.getValue()))
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
         try {
             s3Client.copyObject(builder -> builder
-                .copySource(bucket + ref)
-                .destinationBucket(bucket)
-                .destinationKey(ref)
-                .contentType(blob.getContentType())
-                .metadataDirective(MetadataDirective.REPLACE)
-                .metadata(resultMetadata));
+                    .copySource(bucket + ref)
+                    .destinationBucket(bucket)
+                    .destinationKey(ref)
+                    .contentType(blob.getContentType())
+                    .metadataDirective(MetadataDirective.REPLACE)
+                    .metadata(resultMetadata));
         } catch (NoSuchKeyException ex) {
             log.error("Error update blob from S3 storage", ex);
             var message = String.format("Could not update blob %s.", ref);
@@ -348,12 +359,12 @@ public class S3BlobStorage implements BlobStorage {
         }
 
         var result = metadataToObject(metadata)
-            .contentType(blob.getContentType())
-            .lastModifiedAt(now)
-            .size(blob.getSize())
-            .storedRef(ref)
-            .s3Client(s3Client)
-            .build();
+                .contentType(blob.getContentType())
+                .lastModifiedAt(now)
+                .size(blob.getSize())
+                .storedRef(ref)
+                .s3Client(s3Client)
+                .build();
         return DefaultUpdateAttributesResponse.of(result);
     }
 }

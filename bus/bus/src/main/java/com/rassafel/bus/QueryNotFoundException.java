@@ -16,6 +16,9 @@
 
 package com.rassafel.bus;
 
+/**
+ * Exception thrown when a query is not found
+ */
 public class QueryNotFoundException extends HandlerException {
     public QueryNotFoundException() {
     }

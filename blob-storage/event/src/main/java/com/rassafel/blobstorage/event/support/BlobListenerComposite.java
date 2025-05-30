@@ -16,16 +16,18 @@
 
 package com.rassafel.blobstorage.event.support;
 
-
-import com.rassafel.blobstorage.event.BlobEvent;
-import com.rassafel.blobstorage.event.BlobListener;
-import org.springframework.util.Assert;
-
 import java.util.Collection;
 import java.util.LinkedHashSet;
 
+import lombok.NonNull;
+
+import com.rassafel.blobstorage.event.BlobEvent;
+import com.rassafel.blobstorage.event.BlobListener;
+
+/**
+ * Composite blob listener.
+ */
 public class BlobListenerComposite implements GenericBlobListener {
-    private static final String NULL_LISTENER_MESSAGE = "listener cannot be null";
     private final Collection<GenericBlobListener> listeners = new LinkedHashSet<>();
 
     private static GenericBlobListener wrapListener(BlobListener<?> listener) {
@@ -42,19 +44,16 @@ public class BlobListenerComposite implements GenericBlobListener {
         return listener;
     }
 
-    public void addBlobListener(BlobListener<?> listener) {
-        Assert.notNull(listener, NULL_LISTENER_MESSAGE);
+    public void addBlobListener(@NonNull BlobListener<?> listener) {
         var wrappedListener = wrapListener(listener);
         addBlobListener(wrappedListener);
     }
 
-    public void addBlobListener(GenericBlobListener listener) {
-        Assert.notNull(listener, NULL_LISTENER_MESSAGE);
+    public void addBlobListener(@NonNull GenericBlobListener listener) {
         listeners.add(listener);
     }
 
-    public void removeBlobListener(BlobListener<?> listener) {
-        Assert.notNull(listener, NULL_LISTENER_MESSAGE);
+    public void removeBlobListener(@NonNull BlobListener<?> listener) {
         listeners.removeIf(l -> {
             var unwrappedListener = unwrapListener(l);
             return unwrappedListener == listener;

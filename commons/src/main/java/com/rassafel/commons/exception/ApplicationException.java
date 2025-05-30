@@ -16,30 +16,34 @@
 
 package com.rassafel.commons.exception;
 
-import lombok.Getter;
-
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import org.springframework.lang.Nullable;
+
+/**
+ * Represents an application exception.
+ */
+@RequiredArgsConstructor
 @Getter
 public class ApplicationException extends RuntimeException {
+    @NonNull
     private final String code;
+    @NonNull
     private final String type;
     private final Map<String, Object> details = new LinkedHashMap<>();
 
-    public ApplicationException(String code, String type) {
-        this.code = code;
-        this.type = type;
-    }
-
-    public void setDetails(Map<String, Object> details) {
+    public void setDetails(@Nullable Map<String, Object> details) {
         this.details.clear();
         if (details != null) {
             this.details.putAll(details);
         }
     }
 
-    public void addDetail(String key, Object value) {
+    public void addDetail(@NonNull String key, @Nullable Object value) {
         details.put(key, value);
     }
 

@@ -16,9 +16,17 @@
 
 package com.rassafel.commons.exception;
 
-
 import org.springframework.http.HttpStatus;
 
+/**
+ * Resolver of HTTP status codes based on application exceptions.
+ */
 public interface ExceptionStatusResolver {
+    /**
+     * Resolves HTTP status code based on application exception.
+     *
+     * @param exception exception to be resolved.
+     * @return HTTP status code.
+     */
     HttpStatus resolve(ApplicationException exception);
 }

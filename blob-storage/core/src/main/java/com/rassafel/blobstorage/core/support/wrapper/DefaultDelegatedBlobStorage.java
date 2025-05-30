@@ -16,30 +16,29 @@
 
 package com.rassafel.blobstorage.core.support.wrapper;
 
+import java.io.InputStream;
+import java.util.Optional;
+
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.lang.Nullable;
+
 import com.rassafel.blobstorage.core.BlobStorage;
 import com.rassafel.blobstorage.core.StoredBlobObject;
 import com.rassafel.blobstorage.core.query.StoreBlobRequest;
 import com.rassafel.blobstorage.core.query.StoreBlobResponse;
 import com.rassafel.blobstorage.core.query.UpdateAttributesRequest;
 import com.rassafel.blobstorage.core.query.UpdateAttributesResponse;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.lang.Nullable;
-import org.springframework.util.Assert;
-
-import java.io.InputStream;
-import java.util.Optional;
 
 /**
  * Delegated BlobStorage
  */
 @Slf4j
+@RequiredArgsConstructor
 public class DefaultDelegatedBlobStorage implements BlobStorage {
+    @NonNull
     private final BlobStorage delegate;
-
-    public DefaultDelegatedBlobStorage(BlobStorage delegate) {
-        Assert.notNull(delegate, "delegate cannot be null");
-        this.delegate = delegate;
-    }
 
     protected BlobStorage getDelegate() {
         return delegate;

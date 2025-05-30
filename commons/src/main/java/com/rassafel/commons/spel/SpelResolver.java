@@ -16,34 +16,40 @@
 
 package com.rassafel.commons.spel;
 
+import java.lang.reflect.Method;
+
 import lombok.Data;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.context.EmbeddedValueResolverAware;
 import org.springframework.context.expression.MethodBasedEvaluationContext;
 import org.springframework.core.ParameterNameDiscoverer;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
+import org.springframework.lang.Nullable;
 import org.springframework.util.StringValueResolver;
 
-import java.lang.reflect.Method;
-
+/**
+ * A resolver for Spring Expression Language (SpEL) expressions.
+ * This class provides methods to parse and evaluate SpEL expressions for AOP.
+ */
+@RequiredArgsConstructor
 public class SpelResolver implements EmbeddedValueResolverAware {
-    private static final String PLACEHOLDER_SPEL_REGEX = "^[$#]\\{.+}$";
-    private static final String METHOD_SPEL_REGEX = "^#.+$";
+    protected static final String PLACEHOLDER_SPEL_REGEX = "^[$#]\\{.+}$";
+    protected static final String METHOD_SPEL_REGEX = "^#.+$";
 
-    private final SpelExpressionParser expressionParser;
-    private final ParameterNameDiscoverer parameterNameDiscoverer;
-    private StringValueResolver stringValueResolver;
-
-    public SpelResolver(SpelExpressionParser expressionParser, ParameterNameDiscoverer parameterNameDiscoverer) {
-        this.expressionParser = expressionParser;
-        this.parameterNameDiscoverer = parameterNameDiscoverer;
-    }
+    @NonNull
+    protected final SpelExpressionParser expressionParser;
+    @NonNull
+    protected final ParameterNameDiscoverer parameterNameDiscoverer;
+    protected StringValueResolver stringValueResolver;
 
     @Override
     public void setEmbeddedValueResolver(StringValueResolver resolver) {
         stringValueResolver = resolver;
     }
 
+    @Nullable
     public String resolve(Method method, Object[] args, String key, String expression) {
         if (StringUtils.isBlank(expression)) return expression;
         if (expression.matches(PLACEHOLDER_SPEL_REGEX) && stringValueResolver != null) {
@@ -58,7 +64,7 @@ public class SpelResolver implements EmbeddedValueResolverAware {
     }
 
     @Data
-    public static class SpelRootObject {
+    protected static class SpelRootObject {
         private final String className;
         private final String methodName;
         private final Object[] args;

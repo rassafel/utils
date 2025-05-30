@@ -16,12 +16,12 @@
 
 package com.rassafel.blobstorage
 
-import com.rassafel.blobstorage.core.StoredBlobObject
-import org.springframework.lang.Nullable
-
 import java.nio.charset.Charset
 import java.nio.charset.StandardCharsets
 
+import org.springframework.lang.Nullable
+
+import com.rassafel.blobstorage.core.StoredBlobObject
 
 class BlobStorageTestUtils {
     public static final Charset CHARSET = StandardCharsets.UTF_8

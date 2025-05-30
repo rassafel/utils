@@ -16,11 +16,12 @@
 
 package com.rassafel.blobstorage.event.support;
 
-import com.rassafel.blobstorage.event.type.DeleteBlobEvent;
-import lombok.Getter;
-
 import java.util.ArrayList;
 import java.util.List;
+
+import lombok.Getter;
+
+import com.rassafel.blobstorage.event.type.DeleteBlobEvent;
 
 @Getter
 public class StubDeleteBlogListenerFromInterface implements StubDeleteBlobListenerInterface {

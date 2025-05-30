@@ -16,10 +16,10 @@
 
 package com.rassafel.blobstorage.core;
 
-import org.springframework.lang.Nullable;
-
 import java.io.IOException;
 import java.io.InputStream;
+
+import org.springframework.lang.Nullable;
 
 /**
  * The stored blob object

@@ -16,6 +16,11 @@
 
 package com.rassafel.commons.builder;
 
+/**
+ * Interface that represents an object that can be built.
+ *
+ * @param <O> type of the object to be built
+ */
 public interface Buildable<O> {
     O build();
 }

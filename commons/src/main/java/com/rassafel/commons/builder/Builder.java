@@ -34,8 +34,7 @@ public interface Builder<O, B extends Builder<O, B>> extends Buildable<O> {
     O build();
 
     /**
-     * A convenience operator that takes something that will
-     * mutate the builder in some way and allows inclusion of it
+     * A convenience operator that takes something that will mutate the builder in some way and allows inclusion of it
      * in chaining operations.
      *
      * @param mutator the function that mutates the builder

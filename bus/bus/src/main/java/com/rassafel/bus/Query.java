@@ -16,5 +16,10 @@
 
 package com.rassafel.bus;
 
+/**
+ * Represents a query that can be executed by a bus.
+ *
+ * @param <R> the type of result returned by the query
+ */
 public interface Query<R> {
 }

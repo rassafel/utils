@@ -24,19 +24,34 @@ import org.springframework.boot.web.server.MimeMappings;
 import org.springframework.util.MimeType;
 import org.springframework.util.MimeTypeUtils;
 
+/**
+ * Utility class for file type operations.
+ */
 @UtilityClass
 @Slf4j
 public class FileTypeUtils {
     public static final MimeType DEFAULT_MIME_TYPE = MimeTypeUtils.APPLICATION_OCTET_STREAM;
     private static final MimeMappings INSTANCE = MimeMappings.DEFAULT;
 
+    /**
+     * Get MIME type from file name.
+     *
+     * @param name file name
+     * @return MIME type
+     */
     public static MimeType getMimeTypeFromName(String name) {
         var extension = FilenameUtils.getExtension(name);
         return getMimeType(extension);
     }
 
+    /**
+     * Get MIME type from file extension.
+     *
+     * @param extension file extension
+     * @return MIME type
+     */
     public static MimeType getMimeType(String extension) {
-        if (extension == null) return DEFAULT_MIME_TYPE;
+        if (StringUtils.isBlank(extension)) return DEFAULT_MIME_TYPE;
         var ext = INSTANCE.get(extension);
         if (StringUtils.isBlank(ext)) return DEFAULT_MIME_TYPE;
         return MimeTypeUtils.parseMimeType(ext);

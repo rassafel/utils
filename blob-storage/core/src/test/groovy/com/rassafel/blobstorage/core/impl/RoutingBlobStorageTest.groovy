@@ -16,16 +16,17 @@
 
 package com.rassafel.blobstorage.core.impl
 
+import spock.lang.Shared
+import spock.lang.Specification
 
-import com.rassafel.blobstorage.test.TestStoredBlobObject
 import com.rassafel.blobstorage.core.BlobStorage
 import com.rassafel.blobstorage.core.BlobStorageLocator
+import com.rassafel.blobstorage.core.StoreBlobException
 import com.rassafel.blobstorage.core.query.impl.DefaultStoreBlobRequest
 import com.rassafel.blobstorage.core.query.impl.DefaultStoreBlobResponse
 import com.rassafel.blobstorage.core.query.impl.DefaultUpdateAttributesRequest
 import com.rassafel.blobstorage.core.query.impl.DefaultUpdateAttributesResponse
-import spock.lang.Shared
-import spock.lang.Specification
+import com.rassafel.blobstorage.test.TestStoredBlobObject
 
 import static com.rassafel.blobstorage.BlobStorageTestUtils.toInputStream
 
@@ -43,16 +44,16 @@ class RoutingBlobStorageTest extends Specification {
 
     @Shared
     TestStoredBlobObject.Builder blobBuilder = TestStoredBlobObject.builder()
-        .originalName("test.txt")
-        .attribute("X-Meta", "Value1")
-        .contentType("text/plain")
-        .storedRef(ref)
+            .originalName("test.txt")
+            .attribute("X-Meta", "Value1")
+            .contentType("text/plain")
+            .storedRef(ref)
 
 //region store test
     def storeRequest = DefaultStoreBlobRequest.builder()
-        .originalName("test.txt")
-        .attribute("X-Meta", "Value1")
-        .build()
+            .originalName("test.txt")
+            .attribute("X-Meta", "Value1")
+            .build()
 
     def "store"() {
         given:
@@ -102,13 +103,13 @@ class RoutingBlobStorageTest extends Specification {
         UnsupportedOperationException | Mock(BlobStorage) {
             1 * store(_, _) >> { throw new UnsupportedOperationException() }
         }
-        NullPointerException          | null
+        StoreBlobException            | null
     }
 //endregion
 //region update test
     def updateRequest = DefaultUpdateAttributesRequest.builder()
-        .attribute("X-Test", "Value")
-        .build()
+            .attribute("X-Test", "Value")
+            .build()
 
     def "update"() {
         given:
@@ -158,11 +159,11 @@ class RoutingBlobStorageTest extends Specification {
         storageName  | ref     | IllegalArgumentException | Mock(BlobStorage) {
             1 * updateByRef(ref, _) >> { throw new IllegalArgumentException() }
         }
-        storageName  | ref     | NullPointerException     | null
+        storageName  | ref     | StoreBlobException       | null
         null         | blobKey | IllegalArgumentException | Mock(BlobStorage) {
             1 * updateByRef(blobKey, _) >> { throw new IllegalArgumentException() }
         }
-        null         | blobKey | NullPointerException     | null
+        null         | blobKey | StoreBlobException       | null
     }
 //endregion
 //region exists test
@@ -210,11 +211,11 @@ class RoutingBlobStorageTest extends Specification {
         storageName  | ref     | IllegalArgumentException | Mock(BlobStorage) {
             1 * existsByRef(ref) >> { throw new IllegalArgumentException() }
         }
-        storageName  | ref     | NullPointerException     | null
+        storageName  | ref     | StoreBlobException       | null
         null         | blobKey | IllegalArgumentException | Mock(BlobStorage) {
             1 * existsByRef(blobKey) >> { throw new IllegalArgumentException() }
         }
-        null         | blobKey | NullPointerException     | null
+        null         | blobKey | StoreBlobException       | null
     }
 //endregion
 //region delete test
@@ -262,11 +263,11 @@ class RoutingBlobStorageTest extends Specification {
         storageName  | ref     | IllegalArgumentException | Mock(BlobStorage) {
             1 * deleteByRef(ref) >> { throw new IllegalArgumentException() }
         }
-        storageName  | ref     | NullPointerException     | null
+        storageName  | ref     | StoreBlobException       | null
         null         | blobKey | IllegalArgumentException | Mock(BlobStorage) {
             1 * deleteByRef(blobKey) >> { throw new IllegalArgumentException() }
         }
-        null         | blobKey | NullPointerException     | null
+        null         | blobKey | StoreBlobException       | null
     }
 //endregion
 //region get test
@@ -314,11 +315,11 @@ class RoutingBlobStorageTest extends Specification {
         storageName  | ref     | IllegalArgumentException | Mock(BlobStorage) {
             1 * getByRef(ref) >> { throw new IllegalArgumentException() }
         }
-        storageName  | ref     | NullPointerException     | null
+        storageName  | ref     | StoreBlobException       | null
         null         | blobKey | IllegalArgumentException | Mock(BlobStorage) {
             1 * getByRef(blobKey) >> { throw new IllegalArgumentException() }
         }
-        null         | blobKey | NullPointerException     | null
+        null         | blobKey | StoreBlobException       | null
     }
 //endregion
 //region find test
@@ -366,11 +367,11 @@ class RoutingBlobStorageTest extends Specification {
         storageName  | ref     | IllegalArgumentException | Mock(BlobStorage) {
             1 * findByRef(ref) >> { throw new IllegalArgumentException() }
         }
-        storageName  | ref     | NullPointerException     | null
+        storageName  | ref     | StoreBlobException       | null
         null         | blobKey | IllegalArgumentException | Mock(BlobStorage) {
             1 * findByRef(blobKey) >> { throw new IllegalArgumentException() }
         }
-        null         | blobKey | NullPointerException     | null
+        null         | blobKey | StoreBlobException       | null
     }
 //endregion
 }

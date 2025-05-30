@@ -23,9 +23,9 @@ class BuilderTest extends Specification {
     def "create"() {
         when:
         def actual = TestChildBody.builder()
-            .body("Test 1")
-            .version(1)
-            .build()
+                .body("Test 1")
+                .version(1)
+                .build()
 
         then:
         actual != null
@@ -36,8 +36,8 @@ class BuilderTest extends Specification {
     def "mutate builder"() {
         when:
         def actual = TestChildBody.builder().version(2)
-            .applyMutation(b -> b.body("Test 2"))
-            .build()
+                .applyMutation(b -> b.body("Test 2"))
+                .build()
 
         then:
         actual != null
@@ -48,13 +48,13 @@ class BuilderTest extends Specification {
     def "mutate built object"() {
         given:
         def initial = TestChildBody.builder().version(3)
-            .applyMutation(b -> b.body("Test 3"))
-            .build()
+                .applyMutation(b -> b.body("Test 3"))
+                .build()
 
         when:
         def actual = initial.toBuilder().version(4)
-            .applyMutation(b -> b.body("Test 4"))
-            .build()
+                .applyMutation(b -> b.body("Test 4"))
+                .build()
 
         then:
         actual != null
@@ -70,8 +70,8 @@ class BuilderTest extends Specification {
     def "copy"() {
         given:
         def initial = TestChildBody.builder().version(8)
-            .applyMutation(b -> b.body("Test 8"))
-            .build()
+                .applyMutation(b -> b.body("Test 8"))
+                .build()
 
         when:
         def actual = initial.copy()
@@ -86,8 +86,8 @@ class BuilderTest extends Specification {
     def "copy mutate"() {
         given:
         def initial = TestChildBody.builder().version(5)
-            .applyMutation(b -> b.body("Test 5"))
-            .build()
+                .applyMutation(b -> b.body("Test 5"))
+                .build()
 
         when:
         def actual = initial.copy(e -> {
@@ -103,12 +103,12 @@ class BuilderTest extends Specification {
     def "copy builder"() {
         given:
         def initial = TestChildBody.builder().version(6)
-            .applyMutation(b -> b.body("Test 6"))
+                .applyMutation(b -> b.body("Test 6"))
         def item1 = initial.copy().build()
 
         when:
         def item2 = initial.body("Test 7")
-            .version(7).build()
+                .version(7).build()
 
         then:
         item1 != item2

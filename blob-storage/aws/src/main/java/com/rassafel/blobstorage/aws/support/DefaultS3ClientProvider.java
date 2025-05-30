@@ -16,7 +16,9 @@
 
 package com.rassafel.blobstorage.aws.support;
 
-import com.rassafel.blobstorage.aws.S3ClientProvider;
+import java.net.URI;
+import java.util.concurrent.atomic.AtomicReference;
+
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
@@ -29,9 +31,12 @@ import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3AsyncClient;
 import software.amazon.awssdk.services.s3.S3Client;
 
-import java.net.URI;
-import java.util.concurrent.atomic.AtomicReference;
+import com.rassafel.blobstorage.aws.S3ClientProvider;
 
+/**
+ * Default implementation of {@link S3Client} provider.
+ * It uses AWS SDK to create S3 client based on provided credentials and region.
+ */
 public class DefaultS3ClientProvider implements S3ClientProvider {
     protected final AtomicReference<S3Client> s3ClientReference = new AtomicReference<>();
     protected final AtomicReference<S3AsyncClient> s3AsyncClientAtomicReference = new AtomicReference<>();
@@ -48,6 +53,9 @@ public class DefaultS3ClientProvider implements S3ClientProvider {
         this.endpointUrl = endpointUrl;
     }
 
+    /**
+     * Updates S3 client with new credentials and region.
+     */
     public void refreshS3Client() {
         var region = this.region;
         Assert.hasText(region, "region must not be empty");
@@ -71,14 +79,10 @@ public class DefaultS3ClientProvider implements S3ClientProvider {
     }
 
     @SuppressWarnings("unchecked")
-    protected <T extends AwsClientBuilder<?, ?>> T createClient(T builder,
-                                                                AwsCredentialsProvider credentialsProvider,
-                                                                String region,
-                                                                @Nullable String endpointUrl) {
-        if (StringUtils.isNotBlank(endpointUrl)) builder = (T) builder
-            .endpointOverride(URI.create(endpointUrl));
-        return (T) builder.region(Region.of(region))
-            .credentialsProvider(credentialsProvider);
+    protected <T extends AwsClientBuilder<?, ?>> T createClient(
+            T builder, AwsCredentialsProvider credentialsProvider, String region, @Nullable String endpointUrl) {
+        if (StringUtils.isNotBlank(endpointUrl)) builder = (T) builder.endpointOverride(URI.create(endpointUrl));
+        return (T) builder.region(Region.of(region)).credentialsProvider(credentialsProvider);
     }
 
     @Override

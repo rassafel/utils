@@ -16,12 +16,13 @@
 
 package com.rassafel.blobstorage.event.support;
 
-import com.rassafel.blobstorage.event.BlobEvent;
-import com.rassafel.blobstorage.event.BlobListener;
 import lombok.Getter;
+import lombok.NonNull;
 import org.springframework.aop.support.AopUtils;
 import org.springframework.core.GenericTypeResolver;
-import org.springframework.util.Assert;
+
+import com.rassafel.blobstorage.event.BlobEvent;
+import com.rassafel.blobstorage.event.BlobListener;
 
 /**
  * GenericBlobListener adapter from BlobListener
@@ -32,8 +33,7 @@ public class GenericBlobListenerAdapter implements GenericBlobListener {
     private final Class<? extends BlobEvent> declaredEventType;
 
     @SuppressWarnings("unchecked")
-    public GenericBlobListenerAdapter(BlobListener<?> delegate) {
-        Assert.notNull(delegate, "delegate cannot be null");
+    public GenericBlobListenerAdapter(@NonNull BlobListener<?> delegate) {
         this.delegate = (BlobListener<BlobEvent>) delegate;
         this.declaredEventType = resolveType(AopUtils.getTargetClass(delegate));
     }

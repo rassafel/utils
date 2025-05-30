@@ -16,6 +16,15 @@
 
 package com.rassafel.bus;
 
+/**
+ * Pre-handle command interface. This interface is used to pre-process commands before they are handled by a command.
+ */
 public interface PreHandleCommand {
+    /**
+     * Accepts the command and handles it using the provided handler.
+     *
+     * @param handler the command handler
+     * @param command the command to be handled
+     */
     void accept(CommandHandler<?, ?> handler, Command<?> command);
 }

@@ -16,11 +16,12 @@
 
 package com.rassafel.blobstorage.event;
 
-import com.rassafel.blobstorage.event.impl.NoOpBlobEventPublisher;
-import lombok.Getter;
-
 import java.util.ArrayList;
 import java.util.List;
+
+import lombok.Getter;
+
+import com.rassafel.blobstorage.event.impl.NoOpBlobEventPublisher;
 
 @Getter
 public class StubBlobEventPublisher extends NoOpBlobEventPublisher {

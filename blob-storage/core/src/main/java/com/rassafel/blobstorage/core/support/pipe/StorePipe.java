@@ -16,22 +16,24 @@
 
 package com.rassafel.blobstorage.core.support.pipe;
 
-import com.rassafel.blobstorage.core.BlobStorage;
-import com.rassafel.blobstorage.core.StoreBlobException;
-import com.rassafel.blobstorage.core.query.StoreBlobRequest;
-import com.rassafel.blobstorage.core.query.StoreBlobResponse;
-import com.rassafel.blobstorage.core.query.impl.DefaultStoreBlobRequest;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-import org.apache.commons.io.IOUtils;
-import org.springframework.util.Assert;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
+
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import org.apache.commons.io.IOUtils;
+import org.springframework.util.Assert;
+
+import com.rassafel.blobstorage.core.BlobStorage;
+import com.rassafel.blobstorage.core.StoreBlobException;
+import com.rassafel.blobstorage.core.query.StoreBlobRequest;
+import com.rassafel.blobstorage.core.query.StoreBlobResponse;
+import com.rassafel.blobstorage.core.query.impl.DefaultStoreBlobRequest;
 
 /**
  * Store blob pipe
@@ -44,20 +46,17 @@ public abstract class StorePipe<Source, Pipe extends StorePipe<Source, Pipe>> {
     protected boolean closeStream;
     protected StoreBlobRequest.Builder<?, ?> requestBuilder = DefaultStoreBlobRequest.builder();
 
-    public Pipe source(Source source) {
-        Assert.notNull(source, "source cannot by null");
+    public Pipe source(@NonNull Source source) {
         this.source = source;
         return self();
     }
 
-    public Pipe request(StoreBlobRequest request) {
-        Assert.notNull(request, "request cannot be null");
+    public Pipe request(@NonNull StoreBlobRequest request) {
         requestBuilder = request.toBuilder();
         return self();
     }
 
-    public Pipe mutateRequest(Consumer<StoreBlobRequest.Builder<?, ?>> mutator) {
-        Assert.notNull(mutator, "mutator cannot be null");
+    public Pipe mutateRequest(@NonNull Consumer<StoreBlobRequest.Builder<?, ?>> mutator) {
         mutator.accept(requestBuilder);
         return self();
     }
@@ -75,7 +74,7 @@ public abstract class StorePipe<Source, Pipe extends StorePipe<Source, Pipe>> {
         return store(transformer, ExceptionHandler.ignore());
     }
 
-    public <Result> Result store(Transformer<Result> transformer, ExceptionHandler<Result> exceptionHandler) {
+    public <Result> Result store(@NonNull Transformer<Result> transformer, @NonNull ExceptionHandler<Result> exceptionHandler) {
         Assert.notNull(storage, "storage cannot be null");
         Assert.notNull(source, "source cannot be null");
         var request = requestBuilder.build();
@@ -111,12 +110,12 @@ public abstract class StorePipe<Source, Pipe extends StorePipe<Source, Pipe>> {
             return (ctx, response) -> null;
         }
 
-        static <T> Transformer<T> predicate(Predicate<StoreBlobResponse> predicate,
-                                            Transformer<T> trueTransformer,
-                                            Transformer<T> falseTransformer) {
+        static <T> Transformer<T> predicate(
+                Predicate<StoreBlobResponse> predicate,
+                Transformer<T> trueTransformer,
+                Transformer<T> falseTransformer) {
             return (ctx, response) -> {
-                if (predicate.test(response))
-                    return trueTransformer.transform(ctx, response);
+                if (predicate.test(response)) return trueTransformer.transform(ctx, response);
                 return falseTransformer.transform(ctx, response);
             };
         }

@@ -16,15 +16,21 @@
 
 package com.rassafel.blobstorage.event;
 
-import com.rassafel.blobstorage.core.BlobStorage;
-
 import java.time.LocalDateTime;
 
+import com.rassafel.blobstorage.core.BlobStorage;
+
 /**
- *
+ * Represents an event related to a blob storage operation.
  */
 public interface BlobEvent {
+    /**
+     * Storage where the event occurred.
+     */
     BlobStorage getStorage();
 
+    /**
+     * Timestamp of the event.
+     */
     LocalDateTime getTimestamp();
 }

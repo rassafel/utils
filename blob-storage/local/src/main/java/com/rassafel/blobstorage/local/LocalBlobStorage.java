@@ -16,27 +16,6 @@
 
 package com.rassafel.blobstorage.local;
 
-import com.rassafel.blobstorage.core.BlobStorage;
-import com.rassafel.blobstorage.core.NotFoundBlobException;
-import com.rassafel.blobstorage.core.StoreBlobException;
-import com.rassafel.blobstorage.core.StoredBlobObject;
-import com.rassafel.blobstorage.core.impl.KeyGenerator;
-import com.rassafel.blobstorage.core.query.StoreBlobRequest;
-import com.rassafel.blobstorage.core.query.StoreBlobResponse;
-import com.rassafel.blobstorage.core.query.UpdateAttributesRequest;
-import com.rassafel.blobstorage.core.query.UpdateAttributesResponse;
-import com.rassafel.blobstorage.core.query.impl.DefaultStoreBlobResponse;
-import com.rassafel.blobstorage.core.query.impl.DefaultUpdateAttributesResponse;
-import com.rassafel.blobstorage.core.util.FileTypeUtils;
-import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.lang.Nullable;
-import org.springframework.util.Assert;
-import org.springframework.util.LinkedCaseInsensitiveMap;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
@@ -51,8 +30,33 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.stream.Collectors;
 
+import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.lang.Nullable;
+import org.springframework.util.Assert;
+import org.springframework.util.LinkedCaseInsensitiveMap;
+
+import com.rassafel.blobstorage.core.BlobStorage;
+import com.rassafel.blobstorage.core.NotFoundBlobException;
+import com.rassafel.blobstorage.core.StoreBlobException;
+import com.rassafel.blobstorage.core.StoredBlobObject;
+import com.rassafel.blobstorage.core.impl.KeyGenerator;
+import com.rassafel.blobstorage.core.query.StoreBlobRequest;
+import com.rassafel.blobstorage.core.query.StoreBlobResponse;
+import com.rassafel.blobstorage.core.query.UpdateAttributesRequest;
+import com.rassafel.blobstorage.core.query.UpdateAttributesResponse;
+import com.rassafel.blobstorage.core.query.impl.DefaultStoreBlobResponse;
+import com.rassafel.blobstorage.core.query.impl.DefaultUpdateAttributesResponse;
+import com.rassafel.blobstorage.core.util.FileTypeUtils;
+
+/**
+ * Local implementation of BlobStorage. Stores blobs in a local directory.
+ */
+@Slf4j
 public class LocalBlobStorage implements BlobStorage {
-    protected static final Logger log = LoggerFactory.getLogger(LocalBlobStorage.class);
     protected static final String METADATA_FILE_SUFFIX = ".metadata.properties";
     protected static final String CORE_DATA_PREFIX = "";
     protected static final String METADATA_PREFIX = CORE_DATA_PREFIX + "Meta-";
@@ -64,33 +68,39 @@ public class LocalBlobStorage implements BlobStorage {
     protected static final Charset METADATA_CHARSET = StandardCharsets.UTF_8;
     protected static final DateTimeFormatter TIME_FORMATTER = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
 
+    @NonNull
     protected final KeyGenerator keyGenerator;
+    @NonNull
     protected final String coreDataPrefix;
+    @NonNull
     protected final String metadataPrefix;
     protected final Path documentRootPath;
     protected final Path metadataRootPath;
     protected final Clock clock;
     protected final String metadataFileSuffix;
 
-    public LocalBlobStorage(KeyGenerator keyGenerator,
-                            String storageDir,
-                            String documentDir,
-                            String metadataDir,
-                            Clock clock) {
-        this(keyGenerator, storageDir, documentDir, metadataDir, clock, METADATA_FILE_SUFFIX, CORE_DATA_PREFIX, METADATA_PREFIX);
+    public LocalBlobStorage(
+            KeyGenerator keyGenerator, String storageDir, String documentDir, String metadataDir, Clock clock) {
+        this(
+                keyGenerator,
+                storageDir,
+                documentDir,
+                metadataDir,
+                clock,
+                METADATA_FILE_SUFFIX,
+                CORE_DATA_PREFIX,
+                METADATA_PREFIX);
     }
 
-    public LocalBlobStorage(KeyGenerator keyGenerator,
-                            String storageDir,
-                            String documentDir,
-                            String metadataDir,
-                            Clock clock,
-                            String metadataFileSuffix,
-                            String coreDataPrefix,
-                            String metadataPrefix) {
-        Assert.notNull(keyGenerator, "keyGenerator must not be null");
-        Assert.notNull(coreDataPrefix, "coreDataPrefix must not be null");
-        Assert.notNull(metadataPrefix, "metadataPrefix must not be null");
+    public LocalBlobStorage(
+            KeyGenerator keyGenerator,
+            String storageDir,
+            String documentDir,
+            String metadataDir,
+            Clock clock,
+            String metadataFileSuffix,
+            String coreDataPrefix,
+            String metadataPrefix) {
         Assert.hasText(storageDir, "storageDir must not be empty");
         Assert.hasText(metadataFileSuffix, "metadataFileSuffix must not be empty");
         this.keyGenerator = keyGenerator;
@@ -150,14 +160,15 @@ public class LocalBlobStorage implements BlobStorage {
             var bytes = IOUtils.copyLarge(inputStream, outputStream, 0, 100);
 
             var blob = fromRequest(request)
-                .storedRef(blobKey)
-                .localFile(documentPath)
-                .size(bytes).build();
+                    .storedRef(blobKey)
+                    .localFile(documentPath)
+                    .size(bytes)
+                    .build();
             var metadata = objectToMetadata(blob);
             storeMetadata(metadata, metadataPath, blobKey);
 
             log.debug("The uploading is stored, document path: {}; original name: {}; metadata path: {}",
-                documentPath, blob.getOriginalName(), metadataPath);
+                    documentPath, blob.getOriginalName(), metadataPath);
             return DefaultStoreBlobResponse.of(blob);
         } catch (IOException ex) {
             log.error("Error saving blob to local storage", ex);
@@ -178,8 +189,8 @@ public class LocalBlobStorage implements BlobStorage {
     protected LocalStoredBlobObject.Builder<?, ?> fromRequest(StoreBlobRequest request) {
         var now = LocalDateTime.now(clock);
         return LocalStoredBlobObject.builder(request)
-            .uploadedAt(now)
-            .lastModifiedAt(now);
+                .uploadedAt(now)
+                .lastModifiedAt(now);
     }
 
     protected Map<String, String> objectToMetadata(StoredBlobObject object) {
@@ -198,8 +209,8 @@ public class LocalBlobStorage implements BlobStorage {
     protected Map<String, String> toStoreMetadata(Map<String, String> source) {
         var metadataPrefix = this.metadataPrefix;
         return source.entrySet().stream()
-            .filter(e -> StringUtils.isNotBlank(e.getValue()))
-            .collect(Collectors.toMap(e -> metadataPrefix + e.getKey(), Map.Entry::getValue));
+                .filter(e -> StringUtils.isNotBlank(e.getValue()))
+                .collect(Collectors.toMap(e -> metadataPrefix + e.getKey(), Map.Entry::getValue));
     }
 
     protected void storeMetadata(Map<String, String> metadata, Path path, String blobKey) throws IOException {
@@ -230,9 +241,9 @@ public class LocalBlobStorage implements BlobStorage {
         var metadata = loadMetadata(metadataPath);
 
         return metadataToObject(metadata)
-            .storedRef(ref)
-            .localFile(documentPath)
-            .build();
+                .storedRef(ref)
+                .localFile(documentPath)
+                .build();
     }
 
     protected Map<String, String> loadMetadata(Path path) {
@@ -258,11 +269,11 @@ public class LocalBlobStorage implements BlobStorage {
         var coreDataPrefix = this.coreDataPrefix;
         var metadataPrefix = this.metadataPrefix;
         var builder = LocalStoredBlobObject.builder()
-            .originalName(metadata.get(coreDataPrefix + ORIGINAL_NAME_ATTRIBUTE))
-            .size(Long.parseLong(metadata.get(coreDataPrefix + CONTENT_LENGTH_ATTRIBUTE)))
-            .contentType(metadata.get(coreDataPrefix + CONTENT_TYPE_ATTRIBUTE))
-            .uploadedAt(LocalDateTime.from(TIME_FORMATTER.parse(metadata.get(coreDataPrefix + UPLOADED_AT_ATTRIBUTE))))
-            .lastModifiedAt(LocalDateTime.from(TIME_FORMATTER.parse(metadata.get(coreDataPrefix + LAST_MODIFIED_AT_ATTRIBUTE))));
+                .originalName(metadata.get(coreDataPrefix + ORIGINAL_NAME_ATTRIBUTE))
+                .size(Long.parseLong(metadata.get(coreDataPrefix + CONTENT_LENGTH_ATTRIBUTE)))
+                .contentType(metadata.get(coreDataPrefix + CONTENT_TYPE_ATTRIBUTE))
+                .uploadedAt(LocalDateTime.from(TIME_FORMATTER.parse(metadata.get(coreDataPrefix + UPLOADED_AT_ATTRIBUTE))))
+                .lastModifiedAt(LocalDateTime.from(TIME_FORMATTER.parse(metadata.get(coreDataPrefix + LAST_MODIFIED_AT_ATTRIBUTE))));
 
         var metadataPrefixLength = metadataPrefix.length();
         metadata.forEach((k, v) -> {
@@ -311,9 +322,9 @@ public class LocalBlobStorage implements BlobStorage {
         }
         metadata.put(coreDataPrefix + LAST_MODIFIED_AT_ATTRIBUTE, TIME_FORMATTER.format(now));
         var resultMetadata = metadata.entrySet().stream()
-            .filter(e -> StringUtils.isNotBlank(e.getKey()))
-            .filter(e -> StringUtils.isNotBlank(e.getValue()))
-            .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+                .filter(e -> StringUtils.isNotBlank(e.getKey()))
+                .filter(e -> StringUtils.isNotBlank(e.getValue()))
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
         try {
             storeMetadata(resultMetadata, metadataPath, ref);
         } catch (IOException ex) {
@@ -323,9 +334,9 @@ public class LocalBlobStorage implements BlobStorage {
         }
 
         var result = metadataToObject(metadata)
-            .storedRef(ref)
-            .localFile(documentPath)
-            .build();
+                .storedRef(ref)
+                .localFile(documentPath)
+                .build();
         return DefaultUpdateAttributesResponse.of(result);
     }
 

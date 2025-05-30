@@ -16,10 +16,13 @@
 
 package com.rassafel.blobstorage.core.query;
 
-import org.springframework.lang.Nullable;
-
 import java.util.Map;
 
+import org.springframework.lang.Nullable;
+
+/**
+ * Request of store a blob.
+ */
 public interface StoreBlobRequest {
 
     /**

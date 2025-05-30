@@ -16,24 +16,24 @@
 
 package com.rassafel.blobstorage.core.impl.keygen;
 
-import com.rassafel.blobstorage.core.impl.KeyGenerator;
-import org.springframework.lang.Nullable;
-import org.springframework.util.Assert;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import org.springframework.lang.Nullable;
+
+import com.rassafel.blobstorage.core.impl.KeyGenerator;
+
 /**
  * The delegating key generator. Returns joined generated key
  * separated by {@link KeyGenerator#SEPARATOR}.
  */
+@RequiredArgsConstructor
 public class DelegatingKeyGenerator implements KeyGenerator {
     private final List<KeyGenerator> generators = new ArrayList<>();
-
-    public DelegatingKeyGenerator() {
-    }
 
     public DelegatingKeyGenerator(Collection<KeyGenerator> generators) {
         generators.forEach(this::addGenerator);
@@ -44,14 +44,14 @@ public class DelegatingKeyGenerator implements KeyGenerator {
      *
      * @param generator generator to add
      */
-    public void addGenerator(KeyGenerator generator) {
-        Assert.notNull(generator, "generator cannot be null");
+    public void addGenerator(@NonNull KeyGenerator generator) {
         generators.add(generator);
     }
 
     @Override
     public String createKey(@Nullable String name) {
-        return generators.stream().map(e -> e.createKey(name))
-            .collect(Collectors.joining(SEPARATOR));
+        return generators.stream()
+                .map(e -> e.createKey(name))
+                .collect(Collectors.joining(SEPARATOR));
     }
 }

@@ -28,9 +28,28 @@ class BackOffsTest extends Specification {
         return longs
     }
 
+    private static List<Long> generate(StateBackOff backOff, int count) {
+        def longs = new ArrayList<Long>(count)
+        for (int i = 0; i < count; i++) {
+            longs.add(backOff.nextDelay())
+        }
+        return longs
+    }
+
     def "fixed"() {
         given:
         def backOff = BackOffs.fixed(1)
+
+        when:
+        def actual = generate(backOff, 20)
+
+        then:
+        actual.every { it == 1L }
+    }
+
+    def "fixed state"() {
+        given:
+        def backOff = BackOffs.fixedState(1)
 
         when:
         def actual = generate(backOff, 20)
@@ -51,9 +70,33 @@ class BackOffsTest extends Specification {
         actual.every { it == 1L }
     }
 
+    def "limit delay state"() {
+        given:
+        def backOff = BackOffs.fixedState(1000)
+        backOff = BackOffs.limitDelayState(1L, backOff)
+
+        when:
+        def actual = generate(backOff, 20)
+
+        then:
+        actual.every { it == 1L }
+    }
+
     def "random delay"() {
         given:
         def backOff = BackOffs.randomDelay(1, 4)
+
+        when:
+        def actual = generate(backOff, 20)
+
+        then:
+        actual.every { it >= 1L }
+        actual.every { it <= 4L }
+    }
+
+    def "random delay state"() {
+        given:
+        def backOff = BackOffs.randomDelayState(1, 4)
 
         when:
         def actual = generate(backOff, 20)
@@ -74,10 +117,34 @@ class BackOffsTest extends Specification {
         actual == [1L, 2L, 4L, 8L, 16L, 32L, 64L, 128L]
     }
 
+    def "exponential state"() {
+        given:
+        def backOff = BackOffs.exponentialState(1, 2)
+
+        when:
+        def actual = generate(backOff, 8)
+
+        then:
+        actual == [1L, 2L, 4L, 8L, 16L, 32L, 64L, 128L]
+    }
+
     def "additional random"() {
         given:
         var backOff = BackOffs.fixed(10)
         backOff = BackOffs.additionalRandom(-2, 2, backOff)
+
+        when:
+        def actual = generate(backOff, 20)
+
+        then:
+        actual.every { it >= 8L }
+        actual.every { it <= 12L }
+    }
+
+    def "additional random state"() {
+        given:
+        var backOff = BackOffs.fixedState(10)
+        backOff = BackOffs.additionalRandomState(-2, 2, backOff)
 
         when:
         def actual = generate(backOff, 20)
@@ -100,5 +167,32 @@ class BackOffsTest extends Specification {
                 1L, 1L, 1L, 1L, 1L,
                 BackOff.STOP, BackOff.STOP, BackOff.STOP, BackOff.STOP, BackOff.STOP
         ]
+    }
+
+    def "limit attempts state"() {
+        given:
+        def backOff = BackOffs.fixedState(1)
+        backOff = BackOffs.limitAttemptsState(5, backOff)
+
+        when:
+        def actual = generate(backOff, 10)
+
+        then:
+        actual == [
+                1L, 1L, 1L, 1L, 1L,
+                BackOff.STOP, BackOff.STOP, BackOff.STOP, BackOff.STOP, BackOff.STOP
+        ]
+    }
+
+    def "backoff stream"() {
+        given:
+        def backOff = BackOffs.fixed(1)
+        backOff = BackOffs.limitAttempts(5, backOff)
+
+        when:
+        def actual = BackOffs.stream(backOff).limit(6).toList()
+
+        then:
+        actual.size() == 5
     }
 }

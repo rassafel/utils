@@ -17,8 +17,17 @@
 package com.rassafel.commons.backoff;
 
 import java.time.Duration;
+import java.util.Iterator;
+import java.util.NoSuchElementException;
+import java.util.Spliterator;
+import java.util.Spliterators;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
+import lombok.AccessLevel;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import lombok.experimental.UtilityClass;
 import org.springframework.util.Assert;
 
@@ -27,6 +36,28 @@ import org.springframework.util.Assert;
  */
 @UtilityClass
 public final class BackOffs {
+    /**
+     * Wraps a given BackOff instance with StateBackOff functionality.
+     *
+     * @param backOff the BackOff instance to wrap
+     * @return a StateBackOff instance that wraps the provided BackOff instance
+     */
+    public static StateBackOff wrap(BackOff backOff) {
+        return new StateBackOffDelegate(backOff);
+    }
+
+    /**
+     * Unwraps a given StateBackOff instance, returning the underlying BackOff instance.
+     *
+     * @param backOff the StateBackOff instance to unwrap
+     * @return the underlying BackOff instance
+     */
+    private static BackOff unwrap(StateBackOff backOff) {
+        if (backOff instanceof StateBackOffDelegate delegate) {
+            return delegate.backOff;
+        }
+        throw new IllegalArgumentException();
+    }
 
     /**
      * Creates a fixed BackOff instance with the specified delay in milliseconds.
@@ -49,6 +80,26 @@ public final class BackOffs {
     }
 
     /**
+     * Creates a StateBackOff instance with a fixed delay.
+     *
+     * @param delay the fixed delay in milliseconds
+     * @return a StateBackOff instance with a fixed delay
+     */
+    public static StateBackOff fixedState(long delay) {
+        return wrap(fixed(delay));
+    }
+
+    /**
+     * Creates a StateBackOff instance with a fixed delay.
+     *
+     * @param delay the fixed delay
+     * @return a StateBackOff instance with a fixed delay
+     */
+    public static StateBackOff fixedState(Duration delay) {
+        return wrap(fixed(delay));
+    }
+
+    /**
      * Creates a BackOff instance that limits the delay to the specified maximum.
      *
      * @param maxDelay the maximum allowed delay in milliseconds
@@ -68,6 +119,28 @@ public final class BackOffs {
      */
     public static BackOff limitDelay(@NonNull Duration maxDelay, BackOff backOff) {
         return limitDelay(maxDelay.toMillis(), backOff);
+    }
+
+    /**
+     * Creates a StateBackOff instance that limits the delay to the specified maximum.
+     *
+     * @param maxDelay the maximum allowed delay in milliseconds
+     * @param backOff  the underlying BackOff instance
+     * @return a StateBackOff instance with limited delay
+     */
+    public static StateBackOff limitDelayState(long maxDelay, StateBackOff backOff) {
+        return wrap(limitDelay(maxDelay, unwrap(backOff)));
+    }
+
+    /**
+     * Creates a StateBackOff instance that limits the delay to the specified maximum.
+     *
+     * @param maxDelay the maximum allowed delay
+     * @param backOff  the underlying BackOff instance
+     * @return a StateBackOff instance with limited delay
+     */
+    public static StateBackOff limitDelayState(Duration maxDelay, StateBackOff backOff) {
+        return wrap(limitDelay(maxDelay, unwrap(backOff)));
     }
 
     /**
@@ -110,6 +183,48 @@ public final class BackOffs {
      */
     public static BackOff exponential(long baseDelay, double multiplier) {
         return new ExponentialBackOff(multiplier, baseDelay);
+    }
+
+    /**
+     * Creates a StateBackOff instance that returns an exponentially increasing delay.
+     *
+     * @param baseDelay the initial delay
+     * @return a StateBackOff instance with exponential delay
+     */
+    public static StateBackOff exponentialState(Duration baseDelay) {
+        return wrap(exponential(baseDelay));
+    }
+
+    /**
+     * Creates a StateBackOff instance that returns an exponentially increasing delay.
+     *
+     * @param baseDelay the initial delay in milliseconds
+     * @return a StateBackOff instance with exponential delay
+     */
+    public static StateBackOff exponentialState(long baseDelay) {
+        return wrap(exponential(baseDelay));
+    }
+
+    /**
+     * Creates a StateBackOff instance that returns an exponentially increasing delay.
+     *
+     * @param baseDelay  the initial delay
+     * @param multiplier the multiplier for the exponential delay
+     * @return a StateBackOff instance with exponential delay
+     */
+    public static StateBackOff exponentialState(Duration baseDelay, double multiplier) {
+        return wrap(exponential(baseDelay, multiplier));
+    }
+
+    /**
+     * Creates a StateBackOff instance that returns an exponentially increasing delay.
+     *
+     * @param baseDelay  the initial delay in milliseconds
+     * @param multiplier the multiplier for the exponential delay
+     * @return a StateBackOff instance with exponential delay
+     */
+    public static StateBackOff exponentialState(long baseDelay, double multiplier) {
+        return wrap(exponential(baseDelay, multiplier));
     }
 
     /**
@@ -156,6 +271,48 @@ public final class BackOffs {
         } else {
             return additionalRandom(min, max, fixed(0));
         }
+    }
+
+    /**
+     * Creates a StateBackOff instance that introduces random delays up to the specified maximum.
+     *
+     * @param max the maximum allowed delay
+     * @return a StateBackOff instance with random delay
+     */
+    public static StateBackOff randomDelayState(Duration max) {
+        return wrap(randomDelay(max));
+    }
+
+    /**
+     * Creates a StateBackOff instance that introduces random delays up to the specified maximum.
+     *
+     * @param max the maximum allowed delay in milliseconds
+     * @return a StateBackOff instance with random delay
+     */
+    public static StateBackOff randomDelayState(long max) {
+        return wrap(randomDelay(max));
+    }
+
+    /**
+     * Creates a StateBackOff instance that introduces random delays up to the specified maximum.
+     *
+     * @param min the minimum allowed delay
+     * @param max the maximum allowed delay
+     * @return a StateBackOff instance with random delay
+     */
+    public static StateBackOff randomDelayState(Duration min, Duration max) {
+        return wrap(randomDelay(min, max));
+    }
+
+    /**
+     * Creates a StateBackOff instance that introduces random delays up to the specified maximum.
+     *
+     * @param min the minimum allowed delay in milliseconds
+     * @param max the maximum allowed delay in milliseconds
+     * @return a StateBackOff instance with random delay
+     */
+    public static StateBackOff randomDelayState(long min, long max) {
+        return wrap(randomDelay(min, max));
     }
 
     /**
@@ -206,6 +363,52 @@ public final class BackOffs {
     }
 
     /**
+     * Creates a StateBackOff instance that introduces random additional delays up to the specified maximum.
+     *
+     * @param max     the maximum allowed additional delay
+     * @param backOff the underlying BackOff instance
+     * @return a StateBackOff instance with random additional delay
+     */
+    public static StateBackOff additionalRandomState(Duration max, StateBackOff backOff) {
+        return wrap(additionalRandom(max, unwrap(backOff)));
+    }
+
+    /**
+     * Creates a StateBackOff instance that introduces random additional delays up to the specified maximum.
+     *
+     * @param max     the maximum allowed additional delay in milliseconds
+     * @param backOff the underlying BackOff instance
+     * @return a StateBackOff instance with random additional delay
+     */
+    public static StateBackOff additionalRandomState(long max, StateBackOff backOff) {
+        return wrap(additionalRandom(max, unwrap(backOff)));
+    }
+
+    /**
+     * Creates a StateBackOff instance that introduces random additional delays up to the specified maximum.
+     *
+     * @param min     the minimum allowed additional delay
+     * @param max     the maximum allowed additional delay
+     * @param backOff the underlying BackOff instance
+     * @return a StateBackOff instance with random additional delay
+     */
+    public static StateBackOff additionalRandomState(Duration min, Duration max, StateBackOff backOff) {
+        return wrap(additionalRandom(min, max, unwrap(backOff)));
+    }
+
+    /**
+     * Creates a StateBackOff instance that introduces random additional delays up to the specified maximum.
+     *
+     * @param min     the minimum allowed additional delay in milliseconds
+     * @param max     the maximum allowed additional delay in milliseconds
+     * @param backOff the underlying BackOff instance
+     * @return a StateBackOff instance with random additional delay
+     */
+    public static StateBackOff additionalRandomState(long min, long max, StateBackOff backOff) {
+        return wrap(additionalRandom(min, max, unwrap(backOff)));
+    }
+
+    /**
      * Creates a BackOff instance that limits the number of attempts to the specified maximum.
      *
      * @param maxAttempts the maximum allowed number of attempts
@@ -214,6 +417,65 @@ public final class BackOffs {
      */
     public static BackOff limitAttempts(long maxAttempts, BackOff backOff) {
         return new MaxAttemptBackOff(maxAttempts, backOff);
+    }
+
+    /**
+     * Creates a StateBackOff instance that limits the number of attempts to the specified maximum.
+     *
+     * @param maxAttempts the maximum allowed number of attempts
+     * @param backOff     the underlying BackOff instance
+     * @return a StateBackOff instance with limited attempts
+     */
+    public static StateBackOff limitAttemptsState(long maxAttempts, StateBackOff backOff) {
+        return wrap(limitAttempts(maxAttempts, unwrap(backOff)));
+    }
+
+    /**
+     * Creates an Iterable that provides the delays for each attempt in the BackOff instance.
+     *
+     * @param backOff the BackOff instance to use for delays
+     * @return an Iterable that provides the delays for each attempt in the BackOff instance.
+     */
+    public static Iterable<Long> iterator(@NonNull BackOff backOff) {
+        return () -> new Iterator<>() {
+            private final StateBackOff stateBackOff = wrap(backOff);
+            private long next = stateBackOff.nextDelay();
+
+            @Override
+            public boolean hasNext() {
+                return !StateBackOff.isStop(next);
+            }
+
+            @Override
+            public Long next() {
+                if (!hasNext()) {
+                    throw new NoSuchElementException();
+                }
+                final var current = next;
+                next = stateBackOff.nextDelay();
+                return current;
+            }
+        };
+    }
+
+    /**
+     * Creates a Spliterator that provides the delays for each attempt in the BackOff instance.
+     *
+     * @param backOff the BackOff instance to use for delays
+     * @return a Spliterator that provides the delays for each attempt in the BackOff instance.
+     */
+    public static Spliterator<Long> spliterator(BackOff backOff) {
+        return Spliterators.spliteratorUnknownSize(iterator(backOff).iterator(), Spliterator.NONNULL);
+    }
+
+    /**
+     * Creates a Stream that provides the delays for each attempt in the BackOff instance.
+     *
+     * @param backOff the BackOff instance to use for delays
+     * @return a Stream that provides the delays for each attempt in the BackOff instance.
+     */
+    public static Stream<Long> stream(BackOff backOff) {
+        return StreamSupport.stream(spliterator(backOff), false);
     }
 
     private static final class FixedBackOff implements BackOff {
@@ -305,6 +567,23 @@ public final class BackOffs {
         public long evaluateDelay(long attempt) {
             if (attempt >= maxAttempts) return STOP;
             return delegate.evaluateDelay(attempt);
+        }
+    }
+
+    @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
+    private static final class StateBackOffDelegate implements StateBackOff {
+        @NonNull
+        private final BackOff backOff;
+        private final AtomicLong attempt = new AtomicLong();
+
+        @Override
+        public long nextDelay() {
+            return backOff.evaluateDelay(attempt.getAndIncrement());
+        }
+
+        @Override
+        public void reset() {
+            attempt.set(0);
         }
     }
 }

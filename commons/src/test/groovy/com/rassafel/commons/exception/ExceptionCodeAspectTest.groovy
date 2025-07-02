@@ -42,6 +42,14 @@ class ExceptionCodeAspectTest extends Specification {
         !ex.getSuppressed().any(ApplicationException::isInstance)
     }
 
+    def "no throw exception"() {
+        when:
+        proxyTarget.single()
+
+        then:
+        noExceptionThrown()
+    }
+
     def "single"() {
         when:
         proxyTarget.single()
@@ -118,6 +126,19 @@ class ExceptionCodeAspectTest extends Specification {
             details["simple"] == "simple"
             details["simpleArgument"] == id
             details["complexArgument"] == id
+            details["argumentByIndex"] == id
+            details["complexArgumentByIndex"] == id
+            details["parameterByIndex"] == id
+            details["complexParameterByIndex"] == id
+            details["className"] == SystemComponent.name
+            details["targetClassName"] == target.class.name
+            details["methodName"] == "detail"
+            details["key"] == "key"
+            details["expression"] == "expression $id"
+            details["argument"] == id
+            details["argumentName"] == "id"
+            details["arguments"] == "$id,SystemComponent.ComplexObject(id=$id)"
+            details["argumentsNames"] == "id,complex"
         }
         1 * target.detail(id, complex) >> { throw new RuntimeException() }
     }

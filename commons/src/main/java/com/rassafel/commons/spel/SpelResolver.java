@@ -50,13 +50,14 @@ public class SpelResolver implements EmbeddedValueResolverAware {
     }
 
     @Nullable
-    public String resolve(Method method, Object[] args, String key, String expression) {
+    public String resolve(Class<?> targetClass, Method method, Object[] args, String key, String expression) {
         if (StringUtils.isBlank(expression)) return expression;
         if (expression.matches(PLACEHOLDER_SPEL_REGEX) && stringValueResolver != null) {
             return stringValueResolver.resolveStringValue(expression);
         }
         if (expression.matches(METHOD_SPEL_REGEX)) {
-            var rootObject = SpelRootObject.of(method, args, key);
+            var parameterNames = parameterNameDiscoverer.getParameterNames(method);
+            var rootObject = SpelRootObject.of(targetClass, method, args, parameterNames, key);
             var context = new MethodBasedEvaluationContext(rootObject, method, args, parameterNameDiscoverer);
             return expressionParser.parseExpression(expression).getValue(context, String.class);
         }
@@ -66,12 +67,18 @@ public class SpelResolver implements EmbeddedValueResolverAware {
     @Data
     protected static class SpelRootObject {
         private final String className;
+        private final String targetClassName;
         private final String methodName;
         private final Object[] args;
+        @Nullable
+        private final String[] argsNames;
         private final String key;
 
-        public static SpelRootObject of(Method method, Object[] args, String key) {
-            return new SpelRootObject(method.getDeclaringClass().getName(), method.getName(), args, key);
+        public static SpelRootObject of(Class<?> targetClass, Method method, Object[] args, @Nullable String[] argsNames, String key) {
+            final var className = method.getDeclaringClass().getName();
+            final var targetClassName = targetClass.getName();
+            final var methodName = method.getName();
+            return new SpelRootObject(className, targetClassName, methodName, args, argsNames, key);
         }
     }
 }

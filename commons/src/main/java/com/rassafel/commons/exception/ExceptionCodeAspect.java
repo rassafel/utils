@@ -57,8 +57,10 @@ public class ExceptionCodeAspect {
     private void doHandleException(JoinPoint jp, Throwable ex, ExceptionCode... exceptionCodes) throws Throwable {
         log.atDebug().addArgument(() -> getMethodName(jp)).log("Handle Exception on {}");
         if (hasApplicationException(ex)) {
+            log.debug("ApplicationException not found");
             throw ex;
         }
+        log.debug("Found ApplicationException");
         var code = foundMatched(ex, exceptionCodes);
         if (code != null) {
             var applicationException = createException(jp, code);
@@ -78,16 +80,7 @@ public class ExceptionCodeAspect {
     }
 
     private boolean hasApplicationException(Throwable ex) {
-        if (ex instanceof ApplicationException) {
-            log.debug("Current exception is ApplicationException");
-            return true;
-        }
-        if (Stream.of(ex.getSuppressed()).anyMatch(ApplicationException.class::isInstance)) {
-            log.debug("Found suppressed ApplicationException");
-            return true;
-        }
-        log.debug("ApplicationException not found");
-        return false;
+        return ApplicationException.findApplicationException(ex) != null;
     }
 
     @Nullable
@@ -126,10 +119,11 @@ public class ExceptionCodeAspect {
 
     private ApplicationException createException(JoinPoint jp, ExceptionCode code) {
         var method = ((MethodSignature) jp.getSignature()).getMethod();
+        var targetClass = jp.getTarget().getClass();
         var args = jp.getArgs();
         var exception = new ApplicationException(code.value(), code.type());
         for (var detail : code.details()) {
-            var resolved = spelResolver.resolve(method, args, detail.key(), detail.value());
+            var resolved = spelResolver.resolve(targetClass, method, args, detail.key(), detail.value());
             log.trace("Resolved detail, key: {}; value: {}",
                     detail.key(), resolved);
             exception.addDetail(detail.key(), resolved);

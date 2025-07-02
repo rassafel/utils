@@ -28,14 +28,27 @@ interface SystemComponent {
     @ExceptionCode(value = "2", type = "INPUT", on = IllegalArgumentException.class)
     void inheritance();
 
+    void withoutAnnotation();
+
     @ExceptionCode(value = "1", on = RuntimeException.class, details = {
             @ExceptionCodeDetail(key = "simple", value = "simple"),
             @ExceptionCodeDetail(key = "simpleArgument", value = "#id"),
+            @ExceptionCodeDetail(key = "argumentByIndex", value = "#a0"),
+            @ExceptionCodeDetail(key = "complexArgumentByIndex", value = "#a1.id"),
+            @ExceptionCodeDetail(key = "parameterByIndex", value = "#p0"),
+            @ExceptionCodeDetail(key = "complexParameterByIndex", value = "#p1.id"),
             @ExceptionCodeDetail(key = "complexArgument", value = "#complex.id"),
+            @ExceptionCodeDetail(key = "className", value = "#root.className"),
+            @ExceptionCodeDetail(key = "targetClassName", value = "#root.targetClassName"),
+            @ExceptionCodeDetail(key = "methodName", value = "#root.methodName"),
+            @ExceptionCodeDetail(key = "key", value = "#root.key"),
+            @ExceptionCodeDetail(key = "expression", value = "#root.key + ' ' + #id"),
+            @ExceptionCodeDetail(key = "argument", value = "#root.args[0]"),
+            @ExceptionCodeDetail(key = "argumentName", value = "#root.argsNames[0]"),
+            @ExceptionCodeDetail(key = "arguments", value = "#root.args"),
+            @ExceptionCodeDetail(key = "argumentsNames", value = "#root.argsNames"),
     })
     void detail(String id, ComplexObject complex);
-
-    void withoutAnnotation();
 
     @RequiredArgsConstructor
     @AllArgsConstructor

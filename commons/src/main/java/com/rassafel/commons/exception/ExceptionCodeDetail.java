@@ -35,7 +35,27 @@ public @interface ExceptionCodeDetail {
     /**
      * Detail value
      * <p>
-     * Can be a SpEL
+     * Can be a SpEL.
+     * <p>
+     * Examples:
+     * <ul>
+     * <li>{@code string} - return constant value</li>
+     * </ul>
+     * SpEL examples:
+     * <ul>
+     * <li>{@code #root.className} - return class name</li>
+     * <li>{@code #root.methodName} - return method name</li>
+     * <li>{@code #root.key} - return {@link ExceptionCodeDetail#key()}</li>
+     * <li>{@code #root.args} - return array with values of method arguments</li>
+     * <li>{@code #root.argsNames} - return array with names of method arguments, can be null</li>
+     * <li>{@code #root.args[X]} - return value of the method argument, where X is index of argument</li>
+     * <li>{@code #root.argsNames[X]} - return name of the method argument, where X is index of argument, can be null</li>
+     * <li>{@code #pX} - return value of the method parameter, where X is index of parameter</li>
+     * <li>{@code #aX} - return value of the method parameter, where X is index of parameter</li>
+     * <li>{@code #id} - return value of the method parameter with name "id"</li>
+     * <li>{@code #p0.id} - return value of the field with name "id from the first method parameter</li>
+     * <li>{@code #obj.id} - return value of the field with name "id from the method parameter with name "obj"</li>
+     * </ul>
      */
     String value();
 }

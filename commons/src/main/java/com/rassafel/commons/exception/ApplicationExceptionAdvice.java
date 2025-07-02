@@ -17,7 +17,6 @@
 package com.rassafel.commons.exception;
 
 import java.util.Locale;
-import java.util.stream.Stream;
 
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.NonNull;
@@ -25,7 +24,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
-import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.context.MessageSource;
 import org.springframework.context.MessageSourceAware;
 import org.springframework.http.HttpStatus;
@@ -78,7 +76,7 @@ public abstract class ApplicationExceptionAdvice implements MessageSourceAware {
 
     @ExceptionHandler
     public ProblemDetail handleThrowable(Throwable throwable, HttpServletRequest request) throws Throwable {
-        var ex = findApplicationException(throwable);
+        var ex = ApplicationException.findApplicationException(throwable);
         if (ex == null) throw throwable;
         var locale = ObjectUtils.defaultIfNull(RequestContextUtils.getLocale(request), Locale.getDefault());
         log.debug("Caught application exception", ex);
@@ -96,15 +94,5 @@ public abstract class ApplicationExceptionAdvice implements MessageSourceAware {
         }
         ex.getDetails().forEach(detail::setProperty);
         return detail;
-    }
-
-    @Nullable
-    protected ApplicationException findApplicationException(Throwable ex) {
-        return ExceptionUtils.getThrowableList(ex).stream()
-                .flatMap(e -> Stream.concat(Stream.of(e), Stream.of(e.getSuppressed())))
-                .filter(ApplicationException.class::isInstance)
-                .map(ApplicationException.class::cast)
-                .findFirst()
-                .orElse(null);
     }
 }

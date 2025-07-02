@@ -24,13 +24,12 @@ import java.util.function.Consumer;
  * @param <B> the builder type (this)
  * @param <O> the type that the builder will build
  */
-public interface Builder<O, B extends Builder<O, B>> extends Buildable<O> {
+public interface Builder<O, B extends Builder<O, B>> {
     /**
      * An immutable object that is created from the properties that have been set on the builder.
      *
      * @return an instance of T
      */
-    @Override
     O build();
 
     /**
@@ -41,7 +40,7 @@ public interface Builder<O, B extends Builder<O, B>> extends Buildable<O> {
      * @return B the mutated builder instance
      */
     @SuppressWarnings("unchecked")
-    default B applyMutation(Consumer<B> mutator) {
+    default B applyMutation(Consumer<? super B> mutator) {
         mutator.accept((B) this);
         return (B) this;
     }

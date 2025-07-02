@@ -13,6 +13,7 @@ dependencies {
     compileOnly(libs.servlet)
     api(libs.spring.web)
     api(libs.spring.webmvc)
+    api(libs.spring.tx)
 
     testImplementation(libs.servlet)
     testImplementation(libs.spock.core)

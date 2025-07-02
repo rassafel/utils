@@ -29,6 +29,7 @@ import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 import lombok.AccessLevel;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.UtilityClass;
@@ -137,6 +138,26 @@ public class StreamUtils {
     }
 
     /**
+     * Filter and cast stream element to specific type.
+     * <p>
+     * Use in {@link Stream#flatMap(Function)}.
+     * If stream element is not instance of target class, it will be ignored.
+     *
+     * @param clazz target class type
+     * @param <T>   input type
+     * @param <R>   output type
+     * @return composed function filter and cast stream element to specific type.
+     */
+    public static <T, R> Function<T, Stream<R>> filterAndCast(Class<R> clazz) {
+        return t -> {
+            if (clazz.isInstance(t)) {
+                return Stream.of(clazz.cast(t));
+            }
+            return Stream.empty();
+        };
+    }
+
+    /**
      * Collect Entry stream to Map
      *
      * @param <K> entry key
@@ -145,6 +166,19 @@ public class StreamUtils {
      */
     public static <K, V> Collector<Map.Entry<K, V>, ?, Map<K, V>> toMap() {
         return Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue);
+    }
+
+    /**
+     * Collect stream to Map with key extractor
+     *
+     * @param keyExtractor key extractor
+     * @param <K>          key type
+     * @param <V>          value type
+     * @return to map collector
+     * @throws IllegalStateException if key extractor returns duplicate keys
+     */
+    public static <K, V> Collector<V, ?, Map<K, V>> toMap(Function<V, K> keyExtractor) {
+        return Collectors.toMap(keyExtractor, Function.identity());
     }
 
     /**
@@ -190,6 +224,98 @@ public class StreamUtils {
                     if (holder.isPresent()) return holder.getValue();
                     throw exceptionSupplier.get();
                 });
+    }
+
+    /**
+     * Count items and collect min max value.
+     *
+     * @param <T> item
+     * @return Stats object
+     */
+    public static <T extends Comparable<? super T>> Collector<T, ?, Stats<T>> stats() {
+        return stats(Comparator.naturalOrder());
+    }
+
+    /**
+     * Count items and collect min max value.
+     *
+     * @param comparator comparator
+     * @param <T>        item
+     * @return Stats object
+     */
+    public static <T> Collector<T, Stats<T>, Stats<T>> stats(Comparator<? super T> comparator) {
+        return Collector.of(
+                () -> new Stats<>(comparator),
+                Stats::accept,
+                Stats::combine,
+                Collector.Characteristics.UNORDERED, Collector.Characteristics.IDENTITY_FINISH
+        );
+    }
+
+    @RequiredArgsConstructor
+    public static class Stats<T> {
+        private final Comparator<? super T> comparator;
+        /**
+         * Number of items.
+         */
+        @Getter
+        private long count;
+
+        /**
+         * Minimum value.
+         */
+        @Nullable
+        @Getter
+        private T min;
+
+        /**
+         * Maximum value.
+         */
+        @Nullable
+        @Getter
+        private T max;
+
+        /**
+         * Check if has min value.
+         *
+         * @return true if has min value, false otherwise.
+         */
+        public boolean hasMin() {
+            // min is null when count is 0 or comparator is Comparator.nullsFirst()
+            return count != 0;
+        }
+
+        /**
+         * Check if has max value.
+         *
+         * @return true if has max value, false otherwise.
+         */
+        public boolean hasMax() {
+            // max is null when count is 0 or comparator is Comparator.nullsLast()
+            return count != 0;
+        }
+
+        public void accept(T val) {
+            if (count == 0) min = max = val;
+            else if (comparator.compare(val, min) < 0) min = val;
+            else if (comparator.compare(val, max) > 0) max = val;
+            count++;
+        }
+
+        public Stats<T> combine(Stats<T> that) {
+            if (!this.comparator.equals(that.comparator)) {
+                throw new IllegalArgumentException("Cannot combine stats with different comparators");
+            }
+            if (this.count == 0) return that;
+            if (that.count == 0) return this;
+
+            this.count += that.count;
+
+            if (this.comparator.compare(that.min, this.min) < 0) this.min = that.min;
+            if (this.comparator.compare(that.max, this.max) > 0) this.max = that.max;
+
+            return that;
+        }
     }
 
     @RequiredArgsConstructor(access = AccessLevel.PRIVATE)

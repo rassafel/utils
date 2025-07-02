@@ -79,12 +79,12 @@ class StreamUtilsTest extends Specification {
 
     def "distinctByKey"() {
         given:
-        def input = List.of(
+        def input = [
                 new IntegerWrapper(1),
                 new IntegerWrapper(1),
                 new IntegerWrapper(2),
-                new IntegerWrapper(3)
-        )
+                new IntegerWrapper(3),
+        ]
 
         when:
         def actual = input.stream()
@@ -98,11 +98,12 @@ class StreamUtilsTest extends Specification {
 
     def "distinctByKey pass null"() {
         given:
-        var input = new ArrayList<IntegerWrapper>()
-        input.add(new IntegerWrapper(1))
-        input.add(new IntegerWrapper(1))
-        input.add(null)
-        input.add(new IntegerWrapper(3))
+        var input = [
+                new IntegerWrapper(1),
+                new IntegerWrapper(1),
+                null,
+                new IntegerWrapper(3),
+        ]
 
         when:
         def actual = input.stream()
@@ -116,11 +117,12 @@ class StreamUtilsTest extends Specification {
 
     def "distinctByKey skip null"() {
         given:
-        var input = new ArrayList<IntegerWrapper>()
-        input.add(new IntegerWrapper(1))
-        input.add(new IntegerWrapper(1))
-        input.add(null)
-        input.add(new IntegerWrapper(3))
+        var input = [
+                new IntegerWrapper(1),
+                new IntegerWrapper(1),
+                null,
+                new IntegerWrapper(3),
+        ]
 
         when:
         def actual = input.stream()
@@ -154,6 +156,62 @@ class StreamUtilsTest extends Specification {
 
         then:
         actual == ""
+    }
+
+    def "filterAndCast empty"() {
+        given:
+        var input = []
+
+        when:
+        def actual = input.stream()
+                .flatMap(StreamUtils.filterAndCast(Integer))
+                .toList()
+
+        then:
+        actual.isEmpty()
+    }
+
+    def "filterAndCast null"() {
+        given:
+        def input = [null, 1]
+
+        when:
+        def actual = input.stream()
+                .flatMap(StreamUtils.filterAndCast(Integer))
+                .toList()
+
+        then:
+        actual.size() == 1
+        actual[0] == 1
+    }
+
+    def "filterAndCast"() {
+        given:
+        def input = [1, "Test"]
+
+        when:
+        def actual = input.stream()
+                .flatMap(StreamUtils.filterAndCast(Integer))
+                .toList()
+
+        then:
+        actual.size() == 1
+        actual[0] == 1
+    }
+
+    def "filterAndCast upcast"() {
+        given:
+        def input = ["Test", 1]
+
+        when:
+        def actual = input.stream()
+                .flatMap(StreamUtils.filterAndCast(Object))
+                .toList()
+
+        then:
+        actual.size() == 2
+        actual[0] == "Test"
+        actual[1] == 1
     }
 
     def "exactlyOne empty list throws exception"() {
@@ -195,5 +253,72 @@ class StreamUtilsTest extends Specification {
         IntegerWrapper(Integer value) {
             this.value = value
         }
+    }
+
+    def "collect stats from empty"() {
+        given:
+        def input = [] as List<Integer>
+
+        when:
+        def actual = input.stream().collect(StreamUtils.stats())
+
+        then:
+        actual.count == 0
+        actual.min == null
+        actual.max == null
+    }
+
+    def "collect stats from one"() {
+        given:
+        def input = [1]
+
+        when:
+        def actual = input.stream().collect(StreamUtils.stats())
+
+        then:
+        actual.count == 1
+        actual.min == 1
+        actual.max == 1
+    }
+
+    def "collect stats from multiple"() {
+        given:
+        def input = [3, 2, 4]
+
+        when:
+        def actual = input.stream().collect(StreamUtils.stats())
+
+        then:
+        actual.count == 3
+        actual.min == 2
+        actual.max == 4
+    }
+
+    def "collect stats from multiple with comparator"() {
+        given:
+        def input = ["Test", "", "Longest"]
+        def comparator = Comparator.comparingInt(String::length)
+
+        when:
+        def actual = input.stream().collect(StreamUtils.stats(comparator))
+
+        then:
+        actual.count == 3
+        actual.min == ""
+        actual.max == "Longest"
+    }
+
+    def "collect stats from multiple with null"() {
+        given:
+        def input = [1, null, 2]
+        def comparator = Comparator.<Integer> nullsFirst(Comparator.naturalOrder())
+
+        when:
+        def actual = input.stream().collect(StreamUtils.stats(comparator))
+
+        then:
+        actual.count == 3
+        actual.min == null
+        actual.max == 2
     }
 }

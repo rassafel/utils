@@ -21,6 +21,8 @@ import java.util.Map;
 
 import com.rassafel.blobstorage.core.BlobObject;
 
+import org.springframework.lang.Nullable;
+
 /**
  * Delegation BlobObject
  */
@@ -35,34 +37,43 @@ public class DefaultDelegationBlobObject implements BlobObject {
         return delegate;
     }
 
+    @Override
     public String getOriginalName() {
         return getDelegate().getOriginalName();
     }
 
+    @Override
     public String getStoredRef() {
         return getDelegate().getStoredRef();
     }
 
+    @Override
     public String getContentType() {
         return getDelegate().getContentType();
     }
 
+    @Override
     public LocalDateTime getUploadedAt() {
         return getDelegate().getUploadedAt();
     }
 
+    @Override
     public LocalDateTime getLastModifiedAt() {
         return getDelegate().getLastModifiedAt();
     }
 
+    @Override
     public long getSize() {
         return getDelegate().getSize();
     }
 
+    @Override
     public Map<String, String> getAttributes() {
         return getDelegate().getAttributes();
     }
 
+    @Nullable
+    @Override
     public String getAttribute(String key) {
         return getDelegate().getAttribute(key);
     }

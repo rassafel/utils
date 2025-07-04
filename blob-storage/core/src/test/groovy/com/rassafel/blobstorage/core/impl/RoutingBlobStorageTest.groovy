@@ -64,7 +64,7 @@ class RoutingBlobStorageTest extends Specification {
 
         then:
         1 * locator.findStorage(storageName) >> Mock(BlobStorage) {
-            1 * store(_, _) >> new DefaultStoreBlobResponse(expectedBlob)
+            1 * store(_, _) >> DefaultStoreBlobResponse.of(expectedBlob)
         }
         0 * _
         verifyAll(response) {
@@ -81,7 +81,7 @@ class RoutingBlobStorageTest extends Specification {
 
         then:
         1 * locator.getDefaultStorage() >> Mock(BlobStorage) {
-            1 * store(_, _) >> new DefaultStoreBlobResponse(expectedBlob)
+            1 * store(_, _) >> DefaultStoreBlobResponse.of(expectedBlob)
         }
         0 * _
         verifyAll(response) {
@@ -120,7 +120,7 @@ class RoutingBlobStorageTest extends Specification {
 
         then:
         1 * locator.findStorage(storageName) >> Mock(BlobStorage) {
-            1 * updateByRef(ref, _) >> new DefaultUpdateAttributesResponse(expectedBlob)
+            1 * updateByRef(ref, _) >> DefaultUpdateAttributesResponse.of(expectedBlob)
         }
         0 * _
         verifyAll(response) {
@@ -137,7 +137,7 @@ class RoutingBlobStorageTest extends Specification {
 
         then:
         1 * locator.findStorage(null) >> Mock(BlobStorage) {
-            1 * updateByRef(blobKey, _) >> new DefaultUpdateAttributesResponse(expectedBlob)
+            1 * updateByRef(blobKey, _) >> DefaultUpdateAttributesResponse.of(expectedBlob)
         }
         0 * _
         verifyAll(response) {

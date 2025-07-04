@@ -19,6 +19,8 @@ spring-context = { module = "org.springframework:spring-context" }
 spring-web = { module = "org.springframework:spring-web" }
 spring-webmvc = { module = "org.springframework:spring-webmvc" }
 spring-tx = { module = "org.springframework:spring-tx" }
+spring-data-commons = { module = "org.springframework.data:spring-data-commons" }
+jakarta-persistence = { module = "jakarta.persistence:jakarta.persistence-api" }
 spring-boot = { module = "org.springframework.boot:spring-boot" }
 spring-boot-autoconfigure = { module = "org.springframework.boot:spring-boot-autoconfigure" }
 spring-security-core = { module = "org.springframework.security:spring-security-core" }

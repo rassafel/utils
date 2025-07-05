@@ -268,9 +268,8 @@ public final class BackOffs {
     public static BackOff randomDelay(long min, long max) {
         if (min == max) {
             return fixed(min);
-        } else {
-            return additionalRandom(min, max, fixed(0));
         }
+        return additionalRandom(min, max, fixed(0));
     }
 
     /**

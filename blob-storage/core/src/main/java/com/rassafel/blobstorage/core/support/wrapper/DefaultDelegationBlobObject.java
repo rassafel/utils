@@ -19,9 +19,9 @@ package com.rassafel.blobstorage.core.support.wrapper;
 import java.time.LocalDateTime;
 import java.util.Map;
 
-import com.rassafel.blobstorage.core.BlobObject;
-
 import org.springframework.lang.Nullable;
+
+import com.rassafel.blobstorage.core.BlobObject;
 
 /**
  * Delegation BlobObject

@@ -22,10 +22,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
-import com.rassafel.blobstorage.core.query.impl.DefaultStoreBlobResponse;
-
-import com.rassafel.blobstorage.core.query.impl.DefaultUpdateAttributesResponse;
-
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.lang.Nullable;
@@ -37,6 +33,8 @@ import com.rassafel.blobstorage.core.query.StoreBlobRequest;
 import com.rassafel.blobstorage.core.query.StoreBlobResponse;
 import com.rassafel.blobstorage.core.query.UpdateAttributesRequest;
 import com.rassafel.blobstorage.core.query.UpdateAttributesResponse;
+import com.rassafel.blobstorage.core.query.impl.DefaultStoreBlobResponse;
+import com.rassafel.blobstorage.core.query.impl.DefaultUpdateAttributesResponse;
 import com.rassafel.blobstorage.core.support.wrapper.DefaultDelegatedBlobStorage;
 
 /**
@@ -122,6 +120,16 @@ public class SecuredBlobStorage extends DefaultDelegatedBlobStorage {
         return false;
     }
 
+    /**
+     * Update blob object attributes by reference
+     * <p>
+     * Can override blob security policy
+     *
+     * @param ref     blob reference
+     * @param request update attributes info. Remove attribute from blob if accepted value is null or blank
+     * @return response with stored blob object
+     * @throws NotFoundBlobException if blob not exists
+     */
     @Override
     public UpdateAttributesResponse updateByRef(String ref, UpdateAttributesRequest request) {
         var blob = super.getByRef(ref);

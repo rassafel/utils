@@ -91,7 +91,7 @@ public class Transactions implements TransactionOperations {
     }
 
     protected static String getDefinitionIdentifier(TransactionDefinition defenition) {
-        StringBuilder result = new StringBuilder();
+        var result = new StringBuilder();
         result.append(getPropagationBehaviorName(defenition.getPropagationBehavior()));
         result.append(',');
         result.append(getIsolationLevelName(defenition.getIsolationLevel()));

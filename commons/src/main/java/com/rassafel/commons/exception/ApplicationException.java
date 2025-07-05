@@ -21,13 +21,13 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.stream.Stream;
 
-import com.rassafel.commons.util.StreamUtils;
-
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.lang.Nullable;
+
+import com.rassafel.commons.util.StreamUtils;
 
 /**
  * Represents an application exception.
@@ -43,6 +43,15 @@ public class ApplicationException extends RuntimeException {
     private final String type;
     private final Map<String, Object> details = new LinkedHashMap<>();
 
+    @Nullable
+    public static ApplicationException findApplicationException(Throwable ex) {
+        return ExceptionUtils.getThrowableList(ex).stream()
+                .flatMap(e -> Stream.concat(Stream.of(e), Stream.of(e.getSuppressed())))
+                .flatMap(StreamUtils.filterAndCast(ApplicationException.class))
+                .findFirst()
+                .orElse(null);
+    }
+
     public void setDetails(@Nullable Map<String, Object> details) {
         this.details.clear();
         if (details != null) {
@@ -56,14 +65,5 @@ public class ApplicationException extends RuntimeException {
 
     public String toCode() {
         return "%s - %s".formatted(type, code);
-    }
-
-    @Nullable
-    public static ApplicationException findApplicationException(Throwable ex) {
-        return ExceptionUtils.getThrowableList(ex).stream()
-                .flatMap(e -> Stream.concat(Stream.of(e), Stream.of(e.getSuppressed())))
-                .flatMap(StreamUtils.filterAndCast(ApplicationException.class))
-                .findFirst()
-                .orElse(null);
     }
 }

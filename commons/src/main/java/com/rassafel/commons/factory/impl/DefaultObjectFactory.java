@@ -57,7 +57,7 @@ public class DefaultObjectFactory implements ObjectFactory {
 
     protected int findInitializer(Class<? extends ObjectInitializer> clazz) {
         var size = initializers.size();
-        for (int i = 0; i < size; i++) {
+        for (var i = 0; i < size; i++) {
             var initializer = initializers.get(i);
             if (clazz.equals(initializer.getClass())) {
                 return i;

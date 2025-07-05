@@ -17,12 +17,12 @@
 package com.rassafel.blobstorage.security;
 
 
+import lombok.RequiredArgsConstructor;
+
 import com.rassafel.blobstorage.core.NotFoundBlobException;
 import com.rassafel.blobstorage.core.StoredBlobObject;
 import com.rassafel.blobstorage.core.query.StoreBlobRequest;
 import com.rassafel.blobstorage.core.query.UpdateAttributesRequest;
-
-import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 public class StaticBlobPolicyHandler implements BlobPolicyHandler {

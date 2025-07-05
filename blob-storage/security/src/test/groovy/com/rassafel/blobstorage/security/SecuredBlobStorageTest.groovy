@@ -154,6 +154,42 @@ class SecuredBlobStorageTest extends Specification {
             .attribute("X-Test", "Value")
             .build()
 
+    def "update is override security policy"() {
+        given:
+        def stored = blobBuilder
+                .attribute(policyAttribute, "allowed")
+                .build()
+        def captured
+
+        when:
+        def actual = delegate.updateByRef(ref, updateRequest.toBuilder()
+                .attribute(policyAttribute, "denied")
+                .build())
+
+        then:
+        1 * blobStorage.getByRef(ref) >> stored
+        1 * blobStorage.updateByRef(ref, _) >> { arguments ->
+            captured = arguments[1]
+            return DefaultUpdateAttributesResponse.of(stored.toBuilder()
+                    .attribute(policyAttribute, "denied")
+                    .attribute("X-Test", "Value")
+                    .build())
+        }
+        0 * _
+        verifyAll(actual.storedObject) {
+            it.originalName == "test.txt"
+            it.contentType == "text/plain"
+            it.storedRef == ref
+            it.getAttribute("X-Meta") == "Value1"
+            it.getAttribute("X-Test") == "Value"
+            it.getAttribute(policyAttribute) == "denied"
+            it.getAttributes().size() == 3
+            it.getAttributes().get("X-Meta") == "Value1"
+            it.getAttributes().get("X-Test") == "Value"
+            it.getAttributes().get(policyAttribute) == "denied"
+        }
+    }
+
     def "update by default policy"() {
         given:
         def stored = blobBuilder.build()
@@ -169,16 +205,16 @@ class SecuredBlobStorageTest extends Specification {
 
     def "update by attributes policy"() {
         given:
-        def stored = attributedBlobBuilder
-                .attribute("X-Test", "Value")
-                .build()
+        def stored = attributedBlobBuilder.build()
 
         when:
         def actual = delegate.updateByRef(ref, updateRequest)
 
         then:
         1 * blobStorage.getByRef(ref) >> stored
-        1 * blobStorage.updateByRef(ref, _) >> DefaultUpdateAttributesResponse.of(stored)
+        1 * blobStorage.updateByRef(ref, _) >> DefaultUpdateAttributesResponse.of(stored.toBuilder()
+                .attribute("X-Test", "Value")
+                .build())
         verifyAll(actual.storedObject) {
             it.originalName == "test.txt"
             it.contentType == "text/plain"

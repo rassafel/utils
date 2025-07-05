@@ -17,13 +17,13 @@
 package com.rassafel.commons.transaction;
 
 
+import java.lang.annotation.*;
+
 import org.springframework.core.annotation.AliasFor;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.lang.annotation.*;
 
 /**
  * Read-only transaction annotation.

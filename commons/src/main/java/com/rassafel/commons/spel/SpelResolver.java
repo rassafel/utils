@@ -18,9 +18,7 @@ package com.rassafel.commons.spel;
 
 import java.lang.reflect.Method;
 
-import lombok.Data;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
+import lombok.*;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.context.EmbeddedValueResolverAware;
 import org.springframework.context.expression.MethodBasedEvaluationContext;
@@ -64,7 +62,9 @@ public class SpelResolver implements EmbeddedValueResolverAware {
         return expression;
     }
 
-    @Data
+    @AllArgsConstructor
+    @Getter
+    @Setter
     protected static class SpelRootObject {
         private final String className;
         private final String targetClassName;

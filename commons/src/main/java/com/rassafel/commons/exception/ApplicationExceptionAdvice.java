@@ -19,6 +19,7 @@ package com.rassafel.commons.exception;
 import java.util.Locale;
 
 import jakarta.servlet.http.HttpServletRequest;
+
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;

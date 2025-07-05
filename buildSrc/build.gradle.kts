@@ -1,7 +1,8 @@
+import com.diffplug.gradle.spotless.FormatExtension
+
 plugins {
     `java-gradle-plugin`
-    `kotlin-dsl`
-    id("com.diffplug.spotless") version "7.0.2"
+    alias(libs.plugins.spotless)
 }
 
 repositories {
@@ -11,28 +12,69 @@ repositories {
 }
 
 dependencies {
-    implementation("org.jetbrains.kotlin:kotlin-gradle-plugin:1.9.25")
-    implementation("com.diffplug.spotless:spotless-plugin-gradle:7.0.2")
-    implementation("io.freefair.gradle:lombok-plugin:8.13.1")
-    implementation("io.freefair.git-version:io.freefair.git-version.gradle.plugin:8.13.1")
-    implementation("io.freefair.aggregate-jacoco-report:io.freefair.aggregate-jacoco-report.gradle.plugin:8.13.1")
-    implementation("io.spring.gradle:dependency-management-plugin:1.1.7")
-    implementation("gradle.plugin.org.jetbrains.gradle.plugin.idea-ext:gradle-idea-ext:1.1.10")
-    implementation("org.barfuin.gradle.jacocolog:org.barfuin.gradle.jacocolog.gradle.plugin:3.1.0")
-}
+    implementation(gradleApi())
 
-tasks {
-    compileKotlin {
-        compilerOptions {
-            jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
-        }
-    }
+    implementation(libs.gradle.kotlin)
+
+    implementation(platform(libs.gradle.freefair.platform))
+    implementation(libs.gradle.freefair.lombok)
+    implementation(libs.gradle.freefair.git)
+    implementation(libs.gradle.freefair.jacoco)
+
+    implementation(libs.gradle.jacoco.log)
+
+    implementation(libs.archunit)
+
+    implementation(libs.gradle.spotless)
+
+    implementation(libs.gradle.idea.ext)
+
+    testImplementation(gradleTestKit())
+    testImplementation(platform(libs.junit.platform))
+    testImplementation(libs.junit.jupiter)
+    testImplementation(platform(libs.assertj.platform))
+    testImplementation(libs.assertj.core)
+    testRuntimeOnly(libs.junit.launcher)
 }
 
 spotless {
-    kotlinGradle {
-        ktlint()
+    fun FormatExtension.defaults() {
+        toggleOffOn("@formatter:off", "@formatter:on")
+        leadingTabsToSpaces()
         trimTrailingWhitespace()
         endWithNewline()
+    }
+    java {
+        defaults()
+        removeUnusedImports()
+    }
+    kotlinGradle {
+        defaults()
+        ktlint()
+    }
+}
+
+gradlePlugin {
+    plugins {
+        create("buildConventionsPlugin") {
+            id = "com.rassafel.build.conventions"
+            implementationClass = "com.rassafel.BuildConventionsPlugin"
+        }
+        create("developerConventionsPlugin") {
+            id = "com.rassafel.developer.conventions"
+            implementationClass = "com.rassafel.DeveloperConventionsPlugin"
+        }
+        create("versionPlugin") {
+            id = "com.rassafel.version.conventions"
+            implementationClass = "com.rassafel.version.VersionPlugin"
+        }
+        create("publishPlugin") {
+            id = "com.rassafel.publish.conventions"
+            implementationClass = "com.rassafel.publish.PublishPlugin"
+        }
+        create("publishModulePlugin") {
+            id = "com.rassafel.publish.module.conventions"
+            implementationClass = "com.rassafel.publish.ModulePublishPlugin"
+        }
     }
 }

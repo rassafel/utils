@@ -1,5 +1,6 @@
 plugins {
     `java-platform`
+    com.rassafel.publish.conventions
 }
 
 javaPlatform {
@@ -7,7 +8,25 @@ javaPlatform {
 }
 
 dependencies {
-    api(platform("org.springframework.boot:spring-boot-dependencies:${libs.versions.spring.boot.get()}"))
-    api(platform("software.amazon.awssdk:bom:${libs.versions.amazon.get()}"))
-    api(platform("org.spockframework:spock-bom:${libs.versions.spock.get()}"))
+    rootProject.subprojects
+        .filter { !listOf("platform", "bom").contains(it.name) }
+        .filter { it != rootProject }
+        .forEach { api(it) }
+}
+
+tasks.withType<Jar> {
+    manifest {
+
+    }
+    from(rootDir) {
+        expand()
+    }
+}
+
+publishing {
+    publications {
+        named<MavenPublication>("mavenJava") {
+            from(components["javaPlatform"])
+        }
+    }
 }

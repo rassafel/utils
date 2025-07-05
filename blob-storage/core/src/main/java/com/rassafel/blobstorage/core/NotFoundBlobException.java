@@ -16,6 +16,8 @@
 
 package com.rassafel.blobstorage.core;
 
+import java.io.Serial;
+
 import lombok.Getter;
 
 /**
@@ -23,6 +25,8 @@ import lombok.Getter;
  */
 @Getter
 public class NotFoundBlobException extends StoreBlobException {
+    @Serial
+    private static final long serialVersionUID = -5834681445617813745L;
     private final String ref;
 
     public NotFoundBlobException(String ref) {

@@ -16,7 +16,9 @@
 
 plugins {
     groovy
-    `lib-conventions`
+    `java-test-fixtures`
+    com.rassafel.build.conventions
+    com.rassafel.developer.conventions
 }
 
 dependencies {
@@ -26,5 +28,5 @@ dependencies {
 
     testImplementation(testFixtures(project(":blob-storage-core")))
     testImplementation(libs.spock.core)
-    testImplementation("org.apache.groovy:groovy-nio")
+    testImplementation(libs.groovy.nio)
 }

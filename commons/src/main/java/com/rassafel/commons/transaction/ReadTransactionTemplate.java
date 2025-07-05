@@ -17,6 +17,7 @@
 package com.rassafel.commons.transaction;
 
 
+import java.io.Serial;
 import java.lang.reflect.UndeclaredThrowableException;
 
 import org.springframework.lang.NonNull;
@@ -31,6 +32,9 @@ import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.util.Assert;
 
 public class ReadTransactionTemplate extends TransactionTemplate {
+    @Serial
+    private static final long serialVersionUID = 2989727789797052158L;
+
     public ReadTransactionTemplate() {
     }
 

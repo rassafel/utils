@@ -16,7 +16,9 @@
 
 plugins {
     groovy
-    `lib-conventions`
+    `java-test-fixtures`
+    com.rassafel.build.conventions
+    com.rassafel.developer.conventions
 }
 
 dependencies {

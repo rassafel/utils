@@ -16,6 +16,7 @@
 
 package com.rassafel.blobstorage.event.support;
 
+import java.io.Serial;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneId;
@@ -46,6 +47,9 @@ public class BlobEventToApplicationEventListener implements GenericBlobListener 
     }
 
     private static class ApplicationBlobEvent extends ApplicationEvent {
+        @Serial
+        private static final long serialVersionUID = 1400048669658716402L;
+
         public ApplicationBlobEvent(BlobEvent source) {
             super(source, clockFromEvent(source));
         }

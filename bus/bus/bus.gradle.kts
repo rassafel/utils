@@ -1,6 +1,7 @@
 plugins {
     groovy
-    `lib-conventions`
+    com.rassafel.build.conventions
+    com.rassafel.developer.conventions
 }
 
 dependencies {

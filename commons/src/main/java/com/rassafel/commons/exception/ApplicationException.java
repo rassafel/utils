@@ -16,6 +16,7 @@
 
 package com.rassafel.commons.exception;
 
+import java.io.Serial;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.stream.Stream;
@@ -34,6 +35,8 @@ import org.springframework.lang.Nullable;
 @RequiredArgsConstructor
 @Getter
 public class ApplicationException extends RuntimeException {
+    @Serial
+    private static final long serialVersionUID = 8473641975620247606L;
     @NonNull
     private final String code;
     @NonNull

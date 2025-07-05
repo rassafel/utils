@@ -17,9 +17,14 @@
 package com.rassafel.blobstorage.security;
 
 
+import java.io.Serial;
+
 import com.rassafel.blobstorage.core.StoreBlobException;
 
 public class StoreBlobDeniedException extends StoreBlobException {
+    @Serial
+    private static final long serialVersionUID = -846478948694944593L;
+
     public StoreBlobDeniedException() {
     }
 

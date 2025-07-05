@@ -16,10 +16,15 @@
 
 package com.rassafel.bus;
 
+import java.io.Serial;
+
 /**
  * Exception thrown when a handler fails.
  */
 public class HandlerException extends RuntimeException {
+    @Serial
+    private static final long serialVersionUID = -634183131216166694L;
+
     public HandlerException() {
     }
 

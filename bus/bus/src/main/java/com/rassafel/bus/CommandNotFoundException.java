@@ -16,10 +16,15 @@
 
 package com.rassafel.bus;
 
+import java.io.Serial;
+
 /**
  * Exception thrown when a command is not found.
  */
 public class CommandNotFoundException extends HandlerException {
+    @Serial
+    private static final long serialVersionUID = 1946796734430739149L;
+
     public CommandNotFoundException() {
     }
 

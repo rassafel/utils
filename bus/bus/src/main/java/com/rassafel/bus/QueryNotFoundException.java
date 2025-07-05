@@ -16,10 +16,15 @@
 
 package com.rassafel.bus;
 
+import java.io.Serial;
+
 /**
  * Exception thrown when a query is not found
  */
 public class QueryNotFoundException extends HandlerException {
+    @Serial
+    private static final long serialVersionUID = 5154860468905164034L;
+
     public QueryNotFoundException() {
     }
 

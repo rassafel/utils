@@ -17,6 +17,7 @@
 package com.rassafel.commons.util;
 
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -38,6 +39,8 @@ import org.springframework.lang.Nullable;
 @ToString
 @EqualsAndHashCode
 public final class Pair<L, R> implements Serializable, Map.Entry<L, R> {
+    @Serial
+    private static final long serialVersionUID = -2972065193810266654L;
     @Nullable
     private final L left;
 

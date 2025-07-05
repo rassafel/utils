@@ -1,5 +1,21 @@
+pluginManagement {
+    repositories {
+        gradlePluginPortal()
+        mavenCentral()
+    }
+}
+
+dependencyResolutionManagement {
+    repositories {
+        mavenLocal()
+        mavenCentral()
+    }
+}
+
 rootProject.name = "utils"
 
+
+includeProject("platform", "platform")
 includeProject("bom", "bom")
 
 includeProject("commons", "commons")

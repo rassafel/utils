@@ -16,10 +16,15 @@
 
 package com.rassafel.blobstorage.core;
 
+import java.io.Serial;
+
 /**
  * Base blob exception.
  */
 public class StoreBlobException extends RuntimeException {
+    @Serial
+    private static final long serialVersionUID = -4044666603200215027L;
+
     public StoreBlobException() {
     }
 

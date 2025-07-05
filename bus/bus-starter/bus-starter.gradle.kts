@@ -1,6 +1,6 @@
 plugins {
-    com.rassafel.build.conventions
-    com.rassafel.developer.conventions
+    io.github.rassafel.build.conventions
+    io.github.rassafel.developer.conventions
 }
 
 dependencies {

@@ -25,5 +25,5 @@
   <root level="error">
     <appender-ref ref="STDOUT"/>
   </root>
-  <logger name="com.rassafel" level="debug"/>
+  <logger name="io.github.rassafel" level="debug"/>
 </configuration>

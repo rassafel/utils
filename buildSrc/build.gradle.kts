@@ -57,24 +57,24 @@ spotless {
 gradlePlugin {
     plugins {
         create("buildConventionsPlugin") {
-            id = "com.rassafel.build.conventions"
-            implementationClass = "com.rassafel.BuildConventionsPlugin"
+            id = "io.github.rassafel.build.conventions"
+            implementationClass = "io.github.rassafel.BuildConventionsPlugin"
         }
         create("developerConventionsPlugin") {
-            id = "com.rassafel.developer.conventions"
-            implementationClass = "com.rassafel.DeveloperConventionsPlugin"
+            id = "io.github.rassafel.developer.conventions"
+            implementationClass = "io.github.rassafel.DeveloperConventionsPlugin"
         }
         create("versionPlugin") {
-            id = "com.rassafel.version.conventions"
-            implementationClass = "com.rassafel.version.VersionPlugin"
+            id = "io.github.rassafel.version.conventions"
+            implementationClass = "io.github.rassafel.version.VersionPlugin"
         }
         create("publishPlugin") {
-            id = "com.rassafel.publish.conventions"
-            implementationClass = "com.rassafel.publish.PublishPlugin"
+            id = "io.github.rassafel.publish.conventions"
+            implementationClass = "io.github.rassafel.publish.PublishPlugin"
         }
         create("publishModulePlugin") {
-            id = "com.rassafel.publish.module.conventions"
-            implementationClass = "com.rassafel.publish.ModulePublishPlugin"
+            id = "io.github.rassafel.publish.module.conventions"
+            implementationClass = "io.github.rassafel.publish.ModulePublishPlugin"
         }
     }
 }

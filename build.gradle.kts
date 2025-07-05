@@ -1,13 +1,13 @@
 plugins {
-    com.rassafel.version.conventions
-    com.rassafel.build.conventions apply false
-    com.rassafel.developer.conventions apply false
-    com.rassafel.publish.module.conventions apply false
+    io.github.rassafel.version.conventions
+    io.github.rassafel.build.conventions apply false
+    io.github.rassafel.developer.conventions apply false
+    io.github.rassafel.publish.module.conventions apply false
 }
 
 configure(subprojects.filter { !listOf("platform", "bom").contains(it.name) }.filter { it != project }) {
     apply(plugin = "java-library")
-    apply(plugin = "com.rassafel.publish.module.conventions")
+    apply(plugin = "io.github.rassafel.publish.module.conventions")
     dependencies {
         val api by configurations
 

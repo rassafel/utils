@@ -1,6 +1,6 @@
 plugins {
     `java-platform`
-    com.rassafel.publish.conventions
+    io.github.rassafel.publish.conventions
 }
 
 javaPlatform {

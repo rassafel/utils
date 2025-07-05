@@ -11,30 +11,10 @@ repositories {
     gradlePluginPortal()
 }
 
-dependencies {
-    implementation(gradleApi())
-
-    implementation(libs.gradle.kotlin)
-
-    implementation(platform(libs.gradle.freefair.platform))
-    implementation(libs.gradle.freefair.lombok)
-    implementation(libs.gradle.freefair.git)
-    implementation(libs.gradle.freefair.jacoco)
-
-    implementation(libs.gradle.jacoco.log)
-
-    implementation(libs.archunit)
-
-    implementation(libs.gradle.spotless)
-
-    implementation(libs.gradle.idea.ext)
-
-    testImplementation(gradleTestKit())
-    testImplementation(platform(libs.junit.platform))
-    testImplementation(libs.junit.jupiter)
-    testImplementation(platform(libs.assertj.platform))
-    testImplementation(libs.assertj.core)
-    testRuntimeOnly(libs.junit.launcher)
+java {
+    val version = JavaVersion.toVersion(libs.versions.java.plugin.get())
+    sourceCompatibility = version
+    targetCompatibility = version
 }
 
 spotless {
@@ -77,4 +57,34 @@ gradlePlugin {
             implementationClass = "io.github.rassafel.publish.ModulePublishPlugin"
         }
     }
+}
+
+tasks.test {
+    useJUnitPlatform()
+}
+
+dependencies {
+    implementation(gradleApi())
+
+    implementation(libs.gradle.kotlin)
+
+    implementation(platform(libs.gradle.freefair.platform))
+    implementation(libs.gradle.freefair.lombok)
+    implementation(libs.gradle.freefair.git)
+    implementation(libs.gradle.freefair.jacoco)
+
+    implementation(libs.gradle.jacoco.log)
+
+    implementation(libs.archunit)
+
+    implementation(libs.gradle.spotless)
+
+    implementation(libs.gradle.idea.ext)
+
+    testImplementation(gradleTestKit())
+    testImplementation(platform(libs.junit.platform))
+    testImplementation(libs.junit.jupiter)
+    testImplementation(platform(libs.assertj.platform))
+    testImplementation(libs.assertj.core)
+    testRuntimeOnly(libs.junit.launcher)
 }

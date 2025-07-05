@@ -4,6 +4,17 @@ plugins {
     io.github.rassafel.developer.conventions
 }
 
+publishing {
+    publications.named<MavenPublication>("mavenJava") {
+        pom {
+            name = "Bus"
+            description = """
+                Bus
+            """.trimIndent()
+        }
+    }
+}
+
 dependencies {
     api(libs.apache.lang)
 

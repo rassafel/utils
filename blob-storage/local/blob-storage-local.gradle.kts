@@ -1,24 +1,19 @@
-/*
- * Copyright 2024-2025 the original author or authors.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      https://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 plugins {
     groovy
-    `java-test-fixtures`
     io.github.rassafel.build.conventions
     io.github.rassafel.developer.conventions
+}
+
+publishing {
+    publications.named<MavenPublication>("mavenJava") {
+        pom {
+            name = "Blob Storage Local FS"
+            description = """
+                Blob Storage implementation for local file system.
+                It provides a simple interface to interact with files on the local machine.
+            """.trimIndent()
+        }
+    }
 }
 
 dependencies {

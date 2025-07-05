@@ -34,15 +34,14 @@ public class PublishPlugin implements Plugin<Project> {
     public void apply(@NotNull Project project) {
         this.project = project;
         if (isPublishDisabled()) return;
-        apply();
-    }
 
-    protected void apply() {
         this.project.getPlugins().apply(MavenPublishPlugin.class);
-        publishing = project.getExtensions().getByType(PublishingExtension.class);
-        configureRepository(publishing);
+
+        publishing = this.project.getExtensions().getByType(PublishingExtension.class);
         publication = publishing.getPublications().create("mavenJava", MavenPublication.class);
-        configurePublication(publication);
+
+        configureRepository();
+        configurePublication();
     }
 
     protected boolean isPublishDisabled() {
@@ -51,19 +50,26 @@ public class PublishPlugin implements Plugin<Project> {
         return Boolean.parseBoolean(disabledRaw.toString());
     }
 
-    protected void configureRepository(PublishingExtension extension) {
+    protected void configureRepository() {
         var repository = project.findProperty("deploymentRepository");
         if (repository == null) return;
-        extension.getRepositories().maven(maven -> {
+        var username = project.findProperty("deploymentUsername");
+        publishing.getRepositories().maven(maven -> {
             maven.setUrl(repository);
             maven.setName("deployment");
+            if (username != null) {
+                maven.credentials(credentials -> {
+                    credentials.setUsername(username.toString());
+                    credentials.setPassword(project.property("deploymentPassword").toString());
+                });
+            }
         });
     }
 
-    protected void configurePublication(MavenPublication publication) {
+    protected void configurePublication() {
         publication.pom(pom -> {
-            pom.getName().set(project.property("publication.name").toString());
-            pom.getDescription().set(project.property("publication.description").toString());
+            pom.getName().set(project.getName());
+            pom.getDescription().set(project.getName());
             var repoUrl = project.property("publication.repository_url").toString();
             pom.setPackaging("jar");
             pom.getUrl().set(repoUrl);

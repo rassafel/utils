@@ -1,8 +1,18 @@
 plugins {
     groovy
-    `java-test-fixtures`
     io.github.rassafel.build.conventions
     io.github.rassafel.developer.conventions
+}
+
+publishing {
+    publications.named<MavenPublication>("mavenJava") {
+        pom {
+            name = "Utilities"
+            description = """
+                Utilities for common tasks.
+            """.trimIndent()
+        }
+    }
 }
 
 dependencies {

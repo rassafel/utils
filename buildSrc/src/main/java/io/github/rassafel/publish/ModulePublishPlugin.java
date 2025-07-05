@@ -22,6 +22,8 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Stream;
 
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
@@ -29,44 +31,41 @@ import org.gradle.api.component.ConfigurationVariantDetails;
 import org.gradle.api.file.DuplicatesStrategy;
 import org.gradle.api.logging.LogLevel;
 import org.gradle.api.plugins.JavaPluginExtension;
-import org.gradle.api.plugins.internal.JavaPluginHelper;
-import org.gradle.api.plugins.jvm.internal.JvmFeatureInternal;
-import org.gradle.api.publish.PublishingExtension;
 import org.gradle.api.publish.maven.MavenPublication;
 import org.gradle.api.tasks.TaskContainer;
 import org.gradle.api.tasks.TaskProvider;
 import org.gradle.api.tasks.javadoc.Javadoc;
 import org.gradle.external.javadoc.JavadocMemberLevel;
 import org.gradle.external.javadoc.JavadocOutputLevel;
-import org.gradle.internal.component.external.model.TestFixturesSupport;
 import org.gradle.jvm.component.internal.DefaultJvmSoftwareComponent;
 import org.gradle.jvm.tasks.Jar;
 
 public class ModulePublishPlugin implements Plugin<Project> {
+    public static final String JAVADOC_ARCHIVE = "javadoc";
+    public static final String SOURCES_ARCHIVE = "sources";
+    public static final String JAVADOC_JAR_TASK = "javadocJar";
+    public static final String SOURCES_JAR_TASK = "sourcesJar";
     protected Project project;
-    protected PublishingExtension publishing;
     protected MavenPublication publication;
     private TaskContainer tasks;
 
     @Override
     public void apply(Project project) {
         this.project = project;
-        tasks = project.getTasks();
         var plugin = project.getPlugins().apply(PublishPlugin.class);
-        if (plugin.publishing == null) return;
-        publishing = plugin.publishing;
+        if (plugin.publication == null) return;
+
+        tasks = project.getTasks();
         publication = plugin.publication;
+
         configureJar();
         configureJavadoc();
-        configureSourcesJar();
-        configureJavadocJar();
         configurePublication();
         ignoreTestFixtures();
     }
 
-    private TaskProvider<Jar> configureJar() {
-        var task = tasks.named("jar", Jar.class);
-        task.configure(jar -> {
+    private void configureJar() {
+        jarTask().configure(jar -> {
             jar.manifest(manifest -> {
                 var attributes = new LinkedHashMap<String, Object>();
                 attributes.put("Implementation-Title", project.getName());
@@ -82,16 +81,15 @@ public class ModulePublishPlugin implements Plugin<Project> {
 
                 copy.into("META-INF");
                 copy.expand(Map.of(
-                        "version", project.getVersion(),
-                        "copyright", DateTimeFormatter.ofPattern("yyyy").format(LocalDate.now())
+                    "version", project.getVersion(),
+                    "copyright", DateTimeFormatter.ofPattern("yyyy").format(LocalDate.now())
                 ));
             });
         });
-        return task;
     }
 
-    private TaskProvider<Javadoc> configureJavadoc() {
-        return tasks.named("javadoc", Javadoc.class, javadoc -> {
+    private void configureJavadoc() {
+        javadocTask().configure(javadoc -> {
             javadoc.setDescription("Generates project-level javadoc for use in -javadoc jar");
             javadoc.setFailOnError(true);
             javadoc.options(minOptions -> {
@@ -100,8 +98,8 @@ public class ModulePublishPlugin implements Plugin<Project> {
                 minOptions.setMemberLevel(JavadocMemberLevel.PROTECTED);
 
                 var options = minOptions.header(project.getName())
-                        .use(true)
-                        .author(true);
+                    .use(true)
+                    .author(true);
                 options.addBooleanOption("Xdoclint:syntax,-reference", true);
                 options.addBooleanOption("Werror", false);
             });
@@ -110,36 +108,51 @@ public class ModulePublishPlugin implements Plugin<Project> {
         });
     }
 
-    private TaskProvider<Jar> configureSourcesJar() {
-        return tasks.register("sourcesJar", Jar.class, task -> {
+    private void configurePublication() {
+        publication.from(javaComponents());
+        publication.artifact(sourcesJarTask());
+        publication.artifact(javadocJarTask());
+    }
+
+    private TaskProvider<Jar> sourcesJarTask() {
+        if (tasks.findByName(SOURCES_JAR_TASK) != null) return tasks.named(SOURCES_JAR_TASK, Jar.class);
+        return tasks.register(SOURCES_JAR_TASK, Jar.class, task -> {
             var java = project.getExtensions().getByType(JavaPluginExtension.class);
-            task.dependsOn(tasks.findByName("classes"));
+            task.dependsOn(tasks.named("classes"));
             task.setDuplicatesStrategy(DuplicatesStrategy.EXCLUDE);
-            task.getArchiveClassifier().set("sources");
+            task.getArchiveClassifier().set(SOURCES_ARCHIVE);
             task.from(java.getSourceSets().getByName("main").getAllSource());
         });
     }
 
-    private TaskProvider<Jar> configureJavadocJar() {
-        return tasks.register("javadocJar", Jar.class, task -> {
-            task.getArchiveClassifier().set("javadoc");
-            task.from(tasks.getByName("javadoc"));
+    private TaskProvider<Jar> javadocJarTask() {
+        if (tasks.findByName(JAVADOC_JAR_TASK) != null) return tasks.named(JAVADOC_JAR_TASK, Jar.class);
+        return tasks.register(JAVADOC_JAR_TASK, Jar.class, task -> {
+            task.getArchiveClassifier().set(JAVADOC_ARCHIVE);
+            task.from(javadocTask());
         });
     }
 
-    private void configurePublication() {
-        publication.from(project.getComponents().getByName("java"));
-        publication.artifact(tasks.getByName("sourcesJar"));
-        publication.artifact(tasks.getByName("javadocJar"));
+    private TaskProvider<Jar> jarTask() {
+        return tasks.named("jar", Jar.class);
+    }
+
+    private TaskProvider<Javadoc> javadocTask() {
+        return tasks.named("javadoc", Javadoc.class);
     }
 
     private void ignoreTestFixtures() {
-        var feature = (JvmFeatureInternal) project.getComponents().findByName(TestFixturesSupport.TEST_FIXTURES_FEATURE_NAME);
-        if (feature == null) {
-            return;
-        }
-        var component = (DefaultJvmSoftwareComponent) JavaPluginHelper.getJavaComponent(project);
-        component.withVariantsFromConfiguration(feature.getApiElementsConfiguration(), ConfigurationVariantDetails::skip);
-        component.withVariantsFromConfiguration(feature.getRuntimeElementsConfiguration(), ConfigurationVariantDetails::skip);
+        var component = javaComponents();
+        var configurations = project.getConfigurations();
+        Stream.of("testFixturesApiElements", "testFixturesRuntimeElements")
+            .map(configurations::findByName)
+            .filter(Objects::nonNull)
+            .forEach(config ->
+                component.withVariantsFromConfiguration(config, ConfigurationVariantDetails::skip)
+            );
+    }
+
+    private DefaultJvmSoftwareComponent javaComponents() {
+        return (DefaultJvmSoftwareComponent) project.getComponents().getByName("java");
     }
 }

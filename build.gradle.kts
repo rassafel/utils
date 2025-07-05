@@ -7,6 +7,7 @@ plugins {
 
 configure(subprojects.filter { !listOf("platform", "bom").contains(it.name) }.filter { it != project }) {
     apply(plugin = "java-library")
+    apply(plugin = "java-test-fixtures")
     apply(plugin = "io.github.rassafel.publish.module.conventions")
     dependencies {
         val api by configurations

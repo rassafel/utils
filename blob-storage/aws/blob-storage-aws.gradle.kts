@@ -1,8 +1,19 @@
 plugins {
     groovy
-    `java-test-fixtures`
     io.github.rassafel.build.conventions
     io.github.rassafel.developer.conventions
+}
+
+publishing {
+    publications.named<MavenPublication>("mavenJava") {
+        pom {
+            name = "Blob Storage AWS"
+            description = """
+                Blob Storage implementation for AWS.
+                It provides a simple and efficient way to interact with Amazon S3 storage service.
+            """.trimIndent()
+        }
+    }
 }
 
 dependencies {

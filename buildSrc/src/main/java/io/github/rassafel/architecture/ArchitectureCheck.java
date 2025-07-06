@@ -59,7 +59,8 @@ public abstract class ArchitectureCheck extends DefaultTask {
             packageInfoShouldBeNullMarked(),
             noClassesShouldCallStringToLowerCaseWithoutLocale(),
             noClassesShouldCallStringToUpperCaseWithoutLocale(),
-            nullableAnnotation()
+            nullableAnnotation(),
+            nonNullAnnotation()
         );
         getRuleDescriptions().set(getRules().map((rules) -> rules.stream().map(ArchRule::getDescription).toList()));
     }
@@ -98,7 +99,8 @@ public abstract class ArchitectureCheck extends DefaultTask {
 
     private String exceptionMessage(Collection<EvaluationResult> violations) {
         var limitedViolations = violations.stream().limit(LIMIT_VIOLATIONS).toList();
-        var builder = new StringBuilder("Architecture check failed. Architecture violations:\n");
+        var builder = new StringBuilder("Architecture check failed. Architecture violations (")
+            .append(violations.size()).append("times):\n");
 
         var failureMessagesGet = getFieldValueSupplier("failureMessages", FailureReport.class, FailureMessages.class);
         var ruleGet = getFieldValueSupplier("rule", FailureReport.class, HasDescription.class);

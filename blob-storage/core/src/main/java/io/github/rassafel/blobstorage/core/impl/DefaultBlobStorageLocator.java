@@ -24,7 +24,7 @@ import java.util.Optional;
 import lombok.NonNull;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.lang.Nullable;
+import org.jspecify.annotations.Nullable;
 import org.springframework.util.Assert;
 
 import io.github.rassafel.blobstorage.core.BlobStorage;

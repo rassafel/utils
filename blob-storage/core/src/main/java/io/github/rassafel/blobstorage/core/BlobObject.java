@@ -19,7 +19,7 @@ package io.github.rassafel.blobstorage.core;
 import java.time.LocalDateTime;
 import java.util.Map;
 
-import org.springframework.lang.Nullable;
+import org.jspecify.annotations.Nullable;
 
 /**
  * The blob object which contains the uploaded-data's information saved in backend

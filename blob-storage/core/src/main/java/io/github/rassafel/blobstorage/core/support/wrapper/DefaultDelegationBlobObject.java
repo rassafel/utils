@@ -19,7 +19,7 @@ package io.github.rassafel.blobstorage.core.support.wrapper;
 import java.time.LocalDateTime;
 import java.util.Map;
 
-import org.springframework.lang.Nullable;
+import org.jspecify.annotations.Nullable;
 
 import io.github.rassafel.blobstorage.core.BlobObject;
 

@@ -26,7 +26,7 @@ import java.util.Map;
 import java.util.function.Function;
 
 import lombok.*;
-import org.springframework.lang.Nullable;
+import org.jspecify.annotations.Nullable;
 
 /**
  * A simple immutable pair.

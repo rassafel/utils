@@ -18,7 +18,7 @@ package io.github.rassafel.blobstorage.core.impl.keygen;
 
 import java.util.concurrent.atomic.AtomicLong;
 
-import org.springframework.lang.Nullable;
+import org.jspecify.annotations.Nullable;
 
 import io.github.rassafel.blobstorage.core.impl.KeyGenerator;
 

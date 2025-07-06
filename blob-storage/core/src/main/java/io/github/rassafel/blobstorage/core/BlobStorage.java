@@ -19,7 +19,7 @@ package io.github.rassafel.blobstorage.core;
 import java.io.InputStream;
 import java.util.Optional;
 
-import org.springframework.lang.Nullable;
+import org.jspecify.annotations.Nullable;
 
 import io.github.rassafel.blobstorage.core.query.StoreBlobRequest;
 import io.github.rassafel.blobstorage.core.query.StoreBlobResponse;

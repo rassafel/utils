@@ -19,7 +19,7 @@ package io.github.rassafel.blobstorage.core.impl.keygen;
 import java.util.UUID;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.lang.Nullable;
+import org.jspecify.annotations.Nullable;
 
 import io.github.rassafel.blobstorage.core.impl.KeyGenerator;
 

@@ -21,8 +21,8 @@ import java.util.function.Supplier;
 
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
+import org.jspecify.annotations.Nullable;
 import org.springframework.data.domain.Persistable;
-import org.springframework.lang.Nullable;
 
 @Slf4j
 @UtilityClass

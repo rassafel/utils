@@ -20,7 +20,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import lombok.Getter;
-import org.springframework.lang.Nullable;
+import org.jspecify.annotations.Nullable;
 import org.springframework.util.LinkedCaseInsensitiveMap;
 
 import io.github.rassafel.blobstorage.core.StoredBlobObject;

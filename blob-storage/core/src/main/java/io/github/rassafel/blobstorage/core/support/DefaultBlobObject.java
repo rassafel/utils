@@ -23,7 +23,7 @@ import java.util.Map;
 import lombok.Getter;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.lang.Nullable;
+import org.jspecify.annotations.Nullable;
 import org.springframework.util.LinkedCaseInsensitiveMap;
 
 import io.github.rassafel.blobstorage.core.BlobObject;

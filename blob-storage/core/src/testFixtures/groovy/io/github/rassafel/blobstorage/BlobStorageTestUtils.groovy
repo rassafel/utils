@@ -19,7 +19,7 @@ package io.github.rassafel.blobstorage
 import java.nio.charset.Charset
 import java.nio.charset.StandardCharsets
 
-import org.springframework.lang.Nullable
+import org.jspecify.annotations.Nullable
 
 import io.github.rassafel.blobstorage.core.StoredBlobObject
 

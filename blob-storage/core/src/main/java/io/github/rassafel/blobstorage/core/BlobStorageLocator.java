@@ -16,7 +16,7 @@
 
 package io.github.rassafel.blobstorage.core;
 
-import org.springframework.lang.Nullable;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Blob storage locator by storage name

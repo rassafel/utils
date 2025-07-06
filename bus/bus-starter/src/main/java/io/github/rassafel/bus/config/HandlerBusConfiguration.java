@@ -19,12 +19,12 @@ package io.github.rassafel.bus.config;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.jspecify.annotations.Nullable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.GenericTypeResolver;
-import org.springframework.lang.Nullable;
 
 import io.github.rassafel.bus.*;
 import io.github.rassafel.bus.impl.DefaultHandlerBus;

@@ -20,8 +20,7 @@ package io.github.rassafel.commons.transaction;
 import java.io.Serial;
 import java.lang.reflect.UndeclaredThrowableException;
 
-import org.springframework.lang.NonNull;
-import org.springframework.lang.Nullable;
+import org.jspecify.annotations.Nullable;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionException;
@@ -48,7 +47,7 @@ public class ReadTransactionTemplate extends TransactionTemplate {
 
     @Override
     @Nullable
-    public <T> T execute(@NonNull TransactionCallback<T> action) throws TransactionException {
+    public <T> T execute(TransactionCallback<T> action) throws TransactionException {
         final var transactionManager = getTransactionManager();
         Assert.state(transactionManager != null, "No PlatformTransactionManager set");
 

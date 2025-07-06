@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-@NonNullApi
+@NullMarked
 package io.github.rassafel.commons.repository;
 
-import org.springframework.lang.NonNullApi;
+import org.jspecify.annotations.NullMarked;

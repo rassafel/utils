@@ -20,11 +20,11 @@ import java.lang.reflect.Method;
 
 import lombok.*;
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.Nullable;
 import org.springframework.context.EmbeddedValueResolverAware;
 import org.springframework.context.expression.MethodBasedEvaluationContext;
 import org.springframework.core.ParameterNameDiscoverer;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
-import org.springframework.lang.Nullable;
 import org.springframework.util.StringValueResolver;
 
 /**

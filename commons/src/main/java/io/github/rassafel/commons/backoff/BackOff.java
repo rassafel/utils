@@ -18,7 +18,7 @@ package io.github.rassafel.commons.backoff;
 
 import java.time.Duration;
 
-import org.springframework.lang.Nullable;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Interface for back-off strategies.

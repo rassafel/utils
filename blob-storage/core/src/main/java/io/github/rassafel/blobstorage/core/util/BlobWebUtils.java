@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.time.ZoneOffset;
 import java.util.LinkedHashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
@@ -157,7 +158,7 @@ public class BlobWebUtils {
     public static String capitalize(String value) {
         return Pattern.compile("(?<=-)[a-z]")
                 .matcher(StringUtils.capitalize(value))
-                .replaceAll(m -> m.group().toUpperCase());
+                .replaceAll(m -> m.group().toUpperCase(Locale.ROOT));
     }
 
     /**

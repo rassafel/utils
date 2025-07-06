@@ -19,7 +19,7 @@ package io.github.rassafel.blobstorage.core;
 import java.io.IOException;
 import java.io.InputStream;
 
-import org.springframework.lang.Nullable;
+import org.jspecify.annotations.Nullable;
 
 /**
  * The stored blob object

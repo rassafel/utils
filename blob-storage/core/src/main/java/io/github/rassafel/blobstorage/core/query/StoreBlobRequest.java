@@ -18,7 +18,7 @@ package io.github.rassafel.blobstorage.core.query;
 
 import java.util.Map;
 
-import org.springframework.lang.Nullable;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Request of store a blob.

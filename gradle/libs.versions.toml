@@ -13,6 +13,7 @@ spock = "2.3-groovy-4.0"
 archunit = "1.4.1"
 spotless = "7.0.4"
 freefair = "8.14"
+jreleaser = "1.19.0"
 
 [libraries]
 slf4j-api = { module = "org.slf4j:slf4j-api", version = "2.0.17" }
@@ -57,3 +58,4 @@ gradle-idea-ext = { module = "gradle.plugin.org.jetbrains.gradle.plugin.idea-ext
 
 [plugins]
 spotless = { id = "com.diffplug.spotless", version.ref = "spotless" }
+jreleaser = { id = "org.jreleaser" , version.ref = "jreleaser" }

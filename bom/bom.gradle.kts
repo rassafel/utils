@@ -14,14 +14,16 @@ publishing {
             description = """
                 Utils BOM
             """.trimIndent()
+            packaging = "pom"
         }
         from(components["javaPlatform"])
     }
 }
 
 dependencies {
-    rootProject.subprojects
-        .filter { !listOf("platform", "bom").contains(it.name) }
-        .filter { it != rootProject }
-        .forEach { api(it) }
+    val libraries: List<Project> by rootProject.extra
+    constraints {
+        libraries.sortedBy { it.name }
+            .forEach { api(it) }
+    }
 }

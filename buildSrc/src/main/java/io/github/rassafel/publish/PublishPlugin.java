@@ -33,7 +33,6 @@ public class PublishPlugin implements Plugin<Project> {
     @Override
     public void apply(@NotNull Project project) {
         this.project = project;
-        if (isPublishDisabled()) return;
 
         this.project.getPlugins().apply(MavenPublishPlugin.class);
 
@@ -42,12 +41,6 @@ public class PublishPlugin implements Plugin<Project> {
 
         configureRepository();
         configurePublication();
-    }
-
-    protected boolean isPublishDisabled() {
-        var disabledRaw = project.findProperty("publication.disabled");
-        if (disabledRaw == null) return false;
-        return Boolean.parseBoolean(disabledRaw.toString());
     }
 
     protected void configureRepository() {
